@@ -88,32 +88,54 @@ export const BookingModal = ({
         whatsapp_sent_at: new Date().toISOString(),
       };
 
+      let bookingId: string;
+
       if (existing) {
-        await supabase
+        const { data: updated, error: updateError } = await supabase
           .from("bookings")
           .update(bookingData)
           .eq("booking_date", dateStr)
-          .eq("slot_key", slotKey);
+          .eq("slot_key", slotKey)
+          .select("id")
+          .single();
+        
+        if (updateError) throw updateError;
+        bookingId = updated.id;
       } else {
-        await supabase.from("bookings").insert([bookingData]);
+        const { data: inserted, error: insertError } = await supabase
+          .from("bookings")
+          .insert([bookingData])
+          .select("id")
+          .single();
+        
+        if (insertError) throw insertError;
+        bookingId = inserted.id;
       }
 
-      // Call WhatsApp edge function
-      const { error: whatsappError } = await supabase.functions.invoke("send-whatsapp-confirmation", {
-        body: {
-          name: formData.name.trim(),
-          phone: formData.phone.trim(),
-          date: dateStr,
-          slot: slotKey,
-        },
+      // Generate confirmation link
+      const confirmLink = `${window.location.origin}/confirm?id=${bookingId}`;
+
+      const slotLabels: Record<string, string> = {
+        morning: "6AM - 10AM",
+        afternoon: "11AM - 3PM",
+        evening: "4PM - 7PM",
+      };
+
+      const slotTime = slotLabels[slotKey] || slotKey;
+      const formattedDate = selectedDate.toLocaleDateString("en-US", {
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+        year: "numeric",
       });
 
-      if (whatsappError) {
-        console.error("WhatsApp error:", whatsappError);
-        toast.warning("Booking created but WhatsApp message failed. We'll contact you soon.");
-      } else {
-        toast.success("Booking submitted! Please confirm via WhatsApp within 12 hours.");
-      }
+      const message = `Hi, I want to confirm my booking for the ${slotTime} on ${formattedDate}. Please click to confirm: ${confirmLink}`;
+      const whatsappUrl = `https://web.whatsapp.com/send?phone=919600007995&text=${encodeURIComponent(message)}`;
+
+      // Open WhatsApp in new tab
+      window.open(whatsappUrl, "_blank");
+
+      toast.success("Booking created! Please confirm via WhatsApp within 12 hours.");
 
       setFormData({ name: "", address: "", phone: "" });
       onSuccess();

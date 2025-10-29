@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import { Calendar } from "@/components/ui/calendar";
-import { Card } from "@/components/ui/card";
 import { SlotCard } from "@/components/SlotCard";
 import { BookingModal } from "@/components/BookingModal";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Phone, Heart } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { format } from "date-fns";
 
 const SLOTS = [
   { key: "morning", time: "6AM - 10AM", label: "Morning Slot" },
@@ -91,91 +93,138 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/30">
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
-        {/* Header */}
-        <div className="text-center mb-12 animate-in fade-in slide-in-from-top duration-700">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-            Book Your Slot
-          </h1>
-          <p className="text-lg text-muted-foreground">
-            Select a date and choose your preferred time slot
+    <div className="min-h-screen bg-gradient-to-b from-background via-secondary/20 to-background">
+      {/* Header */}
+      <header className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-10 shadow-[var(--shadow-card)]">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <Heart className="h-8 w-8 text-primary" />
+            <div>
+              <h1 className="text-xl font-bold text-foreground">PITRU KARMA</h1>
+              <p className="text-xs text-muted-foreground">पितृकर्मा मार्गः मोक्षाय</p>
+            </div>
+          </div>
+          <a 
+            href="tel:+919600007995" 
+            className="flex items-center gap-2 text-primary hover:text-primary/80 transition-colors"
+          >
+            <Phone className="h-5 w-5" />
+            <span className="font-semibold hidden sm:inline">+91 96000 07995</span>
+          </a>
+        </div>
+      </header>
+
+      <div className="max-w-7xl mx-auto px-4 py-8 md:py-12">
+        {/* Hero Section */}
+        <div className="text-center mb-12 md:mb-16 animate-in fade-in slide-in-from-top duration-700">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full mb-4 border border-primary/20">
+            <Heart className="h-4 w-4 text-primary" />
+            <span className="text-sm text-primary font-medium">Chennai's Most Trusted After-Death Care</span>
+          </div>
+          <h2 className="text-4xl md:text-6xl font-bold text-foreground mb-4">
+            The Path to <span className="text-primary">Moksha</span>
+          </h2>
+          <p className="text-lg md:text-xl text-foreground/80 mb-2">
+            Guided with Tradition, Served with Empathy
+          </p>
+          <p className="text-base text-primary/70 font-semibold mb-6">
+            पितृकर्मा मार्गः मोक्षाय
+          </p>
+          <p className="text-muted-foreground max-w-2xl mx-auto mb-2">
+            Full-service Hindu funeral and ritual management. Chennai-based. NRI-friendly.
+          </p>
+          <p className="text-muted-foreground max-w-2xl mx-auto">
+            Compassionate care when it matters most.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8 mb-12">
-          {/* Calendar Section */}
-          <Card className="p-6 shadow-[var(--shadow-card)] border-border/50 backdrop-blur-sm animate-in fade-in slide-in-from-left duration-700">
-            <h2 className="text-2xl font-semibold mb-4 text-foreground">
-              Select a Date
-            </h2>
-            <div className="flex justify-center">
-              <Calendar
-                mode="single"
-                selected={selectedDate}
-                onSelect={(date) => date && setSelectedDate(date)}
-                className="rounded-lg"
-                disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
-              />
-            </div>
-          </Card>
+        {/* Booking Section */}
+        <div className="bg-card rounded-2xl shadow-[var(--shadow-elevated)] border border-border overflow-hidden animate-in fade-in slide-in-from-bottom duration-700">
+          <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-accent/10 px-6 py-8 md:px-8 border-b border-border">
+            <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
+              Book Your Ritual Slot
+            </h3>
+            <p className="text-muted-foreground">
+              Select a date and choose your preferred time slot for the ceremony
+            </p>
+          </div>
 
-          {/* Selected Date Info */}
-          <Card className="p-6 shadow-[var(--shadow-card)] border-border/50 backdrop-blur-sm animate-in fade-in slide-in-from-right duration-700">
-            <h2 className="text-2xl font-semibold mb-4 text-foreground">
-              Booking Details
-            </h2>
-            <div className="space-y-4">
-              <div className="p-4 bg-primary/10 rounded-lg border border-primary/20">
-                <p className="text-sm text-muted-foreground mb-1">Selected Date</p>
-                <p className="text-xl font-semibold text-primary">
-                  {selectedDate.toLocaleDateString("en-US", {
-                    weekday: "long",
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
+          <div className="grid md:grid-cols-2 gap-8 p-6 md:p-8">
+            {/* Calendar Section */}
+            <div className="animate-in fade-in slide-in-from-left duration-700 delay-100">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="h-1 w-8 bg-primary rounded"></div>
+                <h4 className="text-lg font-semibold text-foreground">Select Date</h4>
+              </div>
+              <div className="flex justify-center bg-secondary/30 rounded-xl p-4">
+                <Calendar
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={(date) => date && setSelectedDate(date)}
+                  disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                  className="rounded-md"
+                />
+              </div>
+            </div>
+
+            {/* Time Slots Section */}
+            <div className="animate-in fade-in slide-in-from-right duration-700 delay-200">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="h-1 w-8 bg-primary rounded"></div>
+                <h4 className="text-lg font-semibold text-foreground">Available Time Slots</h4>
+              </div>
+              <div className="bg-secondary/30 rounded-xl p-4 mb-4">
+                <p className="text-sm font-medium text-foreground mb-1">
+                  {format(selectedDate, "EEEE, MMMM d, yyyy")}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Select your preferred time for the ritual ceremony
                 </p>
               </div>
-              <div className="space-y-2">
-                <p className="text-sm font-medium text-muted-foreground">Status Legend:</p>
-                <div className="flex flex-wrap gap-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                    <span className="text-sm">Available</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                    <span className="text-sm">Pending</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                    <span className="text-sm">Booked</span>
-                  </div>
+
+              {loading ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
                 </div>
-              </div>
+              ) : (
+                <div className="space-y-3">
+                  {SLOTS.map((slot) => {
+                    const status = getSlotStatus(slot.key);
+                    return (
+                      <SlotCard
+                        key={slot.key}
+                        slotKey={slot.key}
+                        time={slot.time}
+                        label={slot.label}
+                        status={status}
+                        onClick={() => handleSlotClick(slot.key)}
+                        loading={loading}
+                      />
+                    );
+                  })}
+                </div>
+              )}
             </div>
-          </Card>
+          </div>
         </div>
 
-        {/* Slots Section */}
-        <div className="animate-in fade-in slide-in-from-bottom duration-700">
-          <h2 className="text-2xl font-semibold mb-6 text-center text-foreground">
-            Available Time Slots
-          </h2>
-          <div className="grid md:grid-cols-3 gap-6">
-            {SLOTS.map((slot, index) => (
-              <SlotCard
-                key={slot.key}
-                slotKey={slot.key}
-                time={slot.time}
-                label={slot.label}
-                status={getSlotStatus(slot.key)}
-                onClick={() => handleSlotClick(slot.key)}
-                loading={loading}
-                delay={index * 100}
-              />
-            ))}
+        {/* Info Section */}
+        <div className="mt-12 text-center max-w-3xl mx-auto animate-in fade-in slide-in-from-bottom duration-700 delay-300">
+          <div className="bg-card rounded-xl p-6 md:p-8 shadow-[var(--shadow-card)] border border-border">
+            <h3 className="text-xl font-semibold text-foreground mb-3">
+              Need Assistance?
+            </h3>
+            <p className="text-muted-foreground mb-4">
+              Our team is available to help you with booking and answer any questions about the ritual ceremonies.
+            </p>
+            <Button 
+              onClick={() => window.location.href = 'tel:+919600007995'}
+              className="gap-2"
+              size="lg"
+            >
+              <Phone className="h-4 w-4" />
+              Call +91 96000 07995
+            </Button>
           </div>
         </div>
       </div>

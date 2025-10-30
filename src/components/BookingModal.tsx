@@ -130,7 +130,7 @@ export const BookingModal = ({
       });
 
       const message = `Hi, I want to confirm my booking for the ${slotTime} on ${formattedDate}. Please click to confirm: ${confirmLink}`;
-      const whatsappUrl = `https://web.whatsapp.com/send?phone=919600007995&text=${encodeURIComponent(message)}`;
+      const whatsappUrl = `https://web.whatsapp.com/send?phone=9003073491&text=${encodeURIComponent(message)}`;
 
       // Open WhatsApp in new tab
       window.open(whatsappUrl, "_blank");

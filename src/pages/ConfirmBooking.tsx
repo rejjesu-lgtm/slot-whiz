@@ -70,7 +70,7 @@ export default function ConfirmBooking() {
       });
 
       const confirmMessage = `Your booking is confirmed for ${slotTime} on ${formattedDate}. Please complete the payment to finalize your booking. Thank you!`;
-      const whatsappUrl = `https://web.whatsapp.com/send?phone=919600007995&text=${encodeURIComponent(confirmMessage)}`;
+      const whatsappUrl = `https://web.whatsapp.com/send?phone=9003073491&text=${encodeURIComponent(confirmMessage)}`;
       
       window.open(whatsappUrl, "_blank");
       

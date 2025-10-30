@@ -105,11 +105,11 @@ const Index = () => {
             </div>
           </div>
           <a 
-            href="tel:+919600007995" 
+            href="tel:+919003073491" 
             className="flex items-center gap-2 text-primary hover:text-primary/80 transition-colors"
           >
             <Phone className="h-5 w-5" />
-            <span className="font-semibold hidden sm:inline">+91 96000 07995</span>
+            <span className="font-semibold hidden sm:inline">+91 90030 73491</span>
           </a>
         </div>
       </header>
@@ -218,12 +218,12 @@ const Index = () => {
               Our team is available to help you with booking and answer any questions about the ritual ceremonies.
             </p>
             <Button 
-              onClick={() => window.location.href = 'tel:+919600007995'}
+              onClick={() => window.location.href = 'tel:+919003073491'}
               className="gap-2"
               size="lg"
             >
               <Phone className="h-4 w-4" />
-              Call +91 96000 07995
+              Call +91 90030 73491
             </Button>
           </div>
         </div>

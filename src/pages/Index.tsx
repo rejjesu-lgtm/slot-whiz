@@ -149,7 +149,7 @@ const Index = () => {
           </div>
           <h2 className="text-5xl md:text-7xl font-bold text-foreground mb-6 leading-tight">
             <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-glow">
-              Hindu Ritual
+              Hindu Ritual Booking
             </span>
           </h2>
           <p className="text-xl md:text-2xl text-foreground/80 mb-3 font-light">

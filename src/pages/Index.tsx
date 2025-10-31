@@ -19,6 +19,7 @@ interface Booking {
   slot_key: string;
   status: string;
   user_name: string;
+  whatsapp_sent_at: string;
 }
 
 const Index = () => {
@@ -90,6 +91,20 @@ const Index = () => {
     const booking = bookings.find((b) => b.slot_key === slotKey);
     if (!booking || booking.status === "expired") return "available";
     return booking.status;
+  };
+
+  const getBookingTimestamp = (slotKey: string) => {
+    const booking = bookings.find((b) => b.slot_key === slotKey);
+    return booking?.whatsapp_sent_at;
+  };
+
+  const expireBooking = async () => {
+    try {
+      await supabase.functions.invoke('expire-bookings');
+      fetchBookings();
+    } catch (error) {
+      console.error('Error expiring bookings:', error);
+    }
   };
 
   return (
@@ -190,6 +205,7 @@ const Index = () => {
                 <div className="space-y-3">
                   {SLOTS.map((slot) => {
                     const status = getSlotStatus(slot.key);
+                    const timestamp = getBookingTimestamp(slot.key);
                     return (
                       <SlotCard
                         key={slot.key}
@@ -199,6 +215,8 @@ const Index = () => {
                         status={status}
                         onClick={() => handleSlotClick(slot.key)}
                         loading={loading}
+                        pendingTimestamp={timestamp}
+                        onExpire={expireBooking}
                       />
                     );
                   })}

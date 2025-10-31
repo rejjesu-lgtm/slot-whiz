@@ -20,14 +20,14 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log('Running booking expiry check...');
 
-    // Calculate 12 hours ago
+    // Calculate 10 minutes ago
     const expiryTime = new Date();
-    expiryTime.setHours(expiryTime.getHours() - 12);
+    expiryTime.setMinutes(expiryTime.getMinutes() - 10);
     const expiryTimeStr = expiryTime.toISOString();
 
     console.log('Expiry time:', expiryTimeStr);
 
-    // Find all pending bookings older than 12 hours
+    // Find all pending bookings older than 10 minutes
     const { data: expiredBookings, error: fetchError } = await supabase
       .from('bookings')
       .select('*')

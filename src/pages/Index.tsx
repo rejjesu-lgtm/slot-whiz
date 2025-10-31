@@ -7,13 +7,19 @@ import { toast } from "sonner";
 import { Phone, Heart, Sparkles, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
-
-const SLOTS = [
-  { key: "morning", time: "6AM - 10AM", label: "Morning Slot" },
-  { key: "afternoon", time: "11AM - 3PM", label: "Afternoon Slot" },
-  { key: "evening", time: "4PM - 7PM", label: "Evening Slot" },
-];
-
+const SLOTS = [{
+  key: "morning",
+  time: "6AM - 10AM",
+  label: "Morning Slot"
+}, {
+  key: "afternoon",
+  time: "11AM - 3PM",
+  label: "Afternoon Slot"
+}, {
+  key: "evening",
+  time: "4PM - 7PM",
+  label: "Evening Slot"
+}];
 interface Booking {
   id: string;
   slot_key: string;
@@ -21,28 +27,24 @@ interface Booking {
   user_name: string;
   whatsapp_sent_at: string;
 }
-
 const Index = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-
   useEffect(() => {
     fetchBookings();
     subscribeToBookings();
   }, [selectedDate]);
-
   const fetchBookings = async () => {
     setLoading(true);
     try {
       const dateStr = selectedDate.toISOString().split("T")[0];
-      const { data, error } = await supabase
-        .from("bookings")
-        .select("*")
-        .eq("booking_date", dateStr);
-
+      const {
+        data,
+        error
+      } = await supabase.from("bookings").select("*").eq("booking_date", dateStr);
       if (error) throw error;
       setBookings(data || []);
     } catch (error: any) {
@@ -52,33 +54,22 @@ const Index = () => {
       setLoading(false);
     }
   };
-
   const subscribeToBookings = () => {
     const dateStr = selectedDate.toISOString().split("T")[0];
-    
-    const channel = supabase
-      .channel(`bookings-${dateStr}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "bookings",
-          filter: `booking_date=eq.${dateStr}`,
-        },
-        () => {
-          fetchBookings();
-        }
-      )
-      .subscribe();
-
+    const channel = supabase.channel(`bookings-${dateStr}`).on("postgres_changes", {
+      event: "*",
+      schema: "public",
+      table: "bookings",
+      filter: `booking_date=eq.${dateStr}`
+    }, () => {
+      fetchBookings();
+    }).subscribe();
     return () => {
       supabase.removeChannel(channel);
     };
   };
-
   const handleSlotClick = (slotKey: string) => {
-    const booking = bookings.find((b) => b.slot_key === slotKey);
+    const booking = bookings.find(b => b.slot_key === slotKey);
     if (!booking || booking.status === "expired") {
       setSelectedSlot(slotKey);
       setIsModalOpen(true);
@@ -86,18 +77,15 @@ const Index = () => {
       toast.info("This slot is already booked or pending confirmation");
     }
   };
-
   const getSlotStatus = (slotKey: string) => {
-    const booking = bookings.find((b) => b.slot_key === slotKey);
+    const booking = bookings.find(b => b.slot_key === slotKey);
     if (!booking || booking.status === "expired") return "available";
     return booking.status;
   };
-
   const getBookingTimestamp = (slotKey: string) => {
-    const booking = bookings.find((b) => b.slot_key === slotKey);
+    const booking = bookings.find(b => b.slot_key === slotKey);
     return booking?.whatsapp_sent_at;
   };
-
   const expireBooking = async () => {
     try {
       await supabase.functions.invoke('expire-bookings');
@@ -106,12 +94,12 @@ const Index = () => {
       console.error('Error expiring bookings:', error);
     }
   };
-
-  return (
-    <div className="min-h-screen bg-[var(--gradient-hero)] relative overflow-hidden">
+  return <div className="min-h-screen bg-[var(--gradient-hero)] relative overflow-hidden">
       {/* Decorative gradient orbs */}
       <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-float" />
-      <div className="absolute bottom-0 left-0 w-96 h-96 bg-accent/5 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }} />
+      <div className="absolute bottom-0 left-0 w-96 h-96 bg-accent/5 rounded-full blur-3xl animate-float" style={{
+      animationDelay: '1s'
+    }} />
       
       {/* Header */}
       <header className="border-b border-border/50 bg-card/60 backdrop-blur-xl sticky top-0 z-50 shadow-[var(--shadow-soft)]">
@@ -125,13 +113,10 @@ const Index = () => {
               <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
                 Mathru Bakthi Sharathasthalam
               </h1>
-              <p className="text-xs text-muted-foreground">मातृभक्ति शरठस्थलम्</p>
+              
             </div>
           </div>
-          <a 
-            href="tel:+919003073491" 
-            className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-primary to-accent text-primary-foreground hover:shadow-[var(--shadow-glow)] transition-all duration-300 hover:scale-105"
-          >
+          <a href="tel:+919003073491" className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-primary to-accent text-primary-foreground hover:shadow-[var(--shadow-glow)] transition-all duration-300 hover:scale-105">
             <Phone className="h-4 w-4" />
             <span className="font-semibold hidden sm:inline">+91 90030 73491</span>
           </a>
@@ -155,13 +140,9 @@ const Index = () => {
           <p className="text-xl md:text-2xl text-foreground/80 mb-3 font-light">
             Sacred Ceremonies, Served with Compassion
           </p>
-          <p className="text-lg text-primary/80 font-semibold mb-8">
-            मातृभक्ति शरठस्थलम्
-          </p>
+          
           <div className="max-w-3xl mx-auto space-y-2">
-            <p className="text-lg text-muted-foreground">
-              Traditional Hindu ancestral ritual services with modern convenience.
-            </p>
+            <p className="text-lg text-muted-foreground">Traditional Hindu ancestral services with modern convenience.</p>
             <p className="text-base text-muted-foreground">
               Chennai-based • NRI-friendly • Compassionate care when it matters most
             </p>
@@ -193,13 +174,7 @@ const Index = () => {
                 <h4 className="text-xl font-bold text-foreground">Select Date</h4>
               </div>
               <div className="flex justify-center bg-gradient-to-br from-secondary/50 to-secondary/30 backdrop-blur-sm rounded-2xl p-6 border border-border/50 shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-elevated)] transition-all duration-300">
-                <Calendar
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={(date) => date && setSelectedDate(date)}
-                  disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
-                  className="rounded-md"
-                />
+                <Calendar mode="single" selected={selectedDate} onSelect={date => date && setSelectedDate(date)} disabled={date => date < new Date(new Date().setHours(0, 0, 0, 0))} className="rounded-md" />
               </div>
             </div>
 
@@ -218,31 +193,15 @@ const Index = () => {
                 </p>
               </div>
 
-              {loading ? (
-                <div className="flex items-center justify-center py-12">
+              {loading ? <div className="flex items-center justify-center py-12">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {SLOTS.map((slot) => {
-                    const status = getSlotStatus(slot.key);
-                    const timestamp = getBookingTimestamp(slot.key);
-                    return (
-                      <SlotCard
-                        key={slot.key}
-                        slotKey={slot.key}
-                        time={slot.time}
-                        label={slot.label}
-                        status={status}
-                        onClick={() => handleSlotClick(slot.key)}
-                        loading={loading}
-                        pendingTimestamp={timestamp}
-                        onExpire={expireBooking}
-                      />
-                    );
-                  })}
-                </div>
-              )}
+                </div> : <div className="space-y-3">
+                  {SLOTS.map(slot => {
+                const status = getSlotStatus(slot.key);
+                const timestamp = getBookingTimestamp(slot.key);
+                return <SlotCard key={slot.key} slotKey={slot.key} time={slot.time} label={slot.label} status={status} onClick={() => handleSlotClick(slot.key)} loading={loading} pendingTimestamp={timestamp} onExpire={expireBooking} />;
+              })}
+                </div>}
             </div>
           </div>
         </div>
@@ -263,11 +222,7 @@ const Index = () => {
               <p className="text-lg text-muted-foreground mb-6 max-w-2xl mx-auto">
                 Our compassionate team is here to guide you through the sacred ceremony booking process and answer all your questions.
               </p>
-              <Button 
-                onClick={() => window.location.href = 'tel:+919003073491'}
-                className="gap-2 bg-gradient-to-r from-primary to-accent hover:shadow-[var(--shadow-glow)] transition-all duration-300 hover:scale-105 text-lg px-8 py-6"
-                size="lg"
-              >
+              <Button onClick={() => window.location.href = 'tel:+919003073491'} className="gap-2 bg-gradient-to-r from-primary to-accent hover:shadow-[var(--shadow-glow)] transition-all duration-300 hover:scale-105 text-lg px-8 py-6" size="lg">
                 <Phone className="h-5 w-5" />
                 Call +91 90030 73491
               </Button>
@@ -276,18 +231,10 @@ const Index = () => {
         </div>
       </div>
 
-      <BookingModal
-        isOpen={isModalOpen}
-        onClose={() => {
-          setIsModalOpen(false);
-          setSelectedSlot(null);
-        }}
-        slotKey={selectedSlot || ""}
-        selectedDate={selectedDate}
-        onSuccess={fetchBookings}
-      />
-    </div>
-  );
+      <BookingModal isOpen={isModalOpen} onClose={() => {
+      setIsModalOpen(false);
+      setSelectedSlot(null);
+    }} slotKey={selectedSlot || ""} selectedDate={selectedDate} onSuccess={fetchBookings} />
+    </div>;
 };
-
 export default Index;

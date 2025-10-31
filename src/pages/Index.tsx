@@ -4,7 +4,7 @@ import { SlotCard } from "@/components/SlotCard";
 import { BookingModal } from "@/components/BookingModal";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Phone, Heart } from "lucide-react";
+import { Phone, Heart, Sparkles, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 
@@ -108,70 +108,92 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-secondary/20 to-background">
+    <div className="min-h-screen bg-[var(--gradient-hero)] relative overflow-hidden">
+      {/* Decorative gradient orbs */}
+      <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-float" />
+      <div className="absolute bottom-0 left-0 w-96 h-96 bg-accent/5 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }} />
+      
       {/* Header */}
-      <header className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-10 shadow-[var(--shadow-card)]">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <Heart className="h-8 w-8 text-primary" />
+      <header className="border-b border-border/50 bg-card/60 backdrop-blur-xl sticky top-0 z-50 shadow-[var(--shadow-soft)]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+          <div className="flex items-center gap-3 group cursor-pointer">
+            <div className="relative">
+              <Heart className="h-8 w-8 text-primary group-hover:scale-110 transition-transform duration-300" />
+              <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl group-hover:bg-primary/30 transition-all" />
+            </div>
             <div>
-              <h1 className="text-xl font-bold text-foreground">PITRU KARMA</h1>
-              <p className="text-xs text-muted-foreground">पितृकर्मा मार्गः मोक्षाय</p>
+              <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+                Mathru Bakthi Sharathasthalam
+              </h1>
+              <p className="text-xs text-muted-foreground">मातृभक्ति शरठस्थलम्</p>
             </div>
           </div>
           <a 
             href="tel:+919003073491" 
-            className="flex items-center gap-2 text-primary hover:text-primary/80 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-primary to-accent text-primary-foreground hover:shadow-[var(--shadow-glow)] transition-all duration-300 hover:scale-105"
           >
-            <Phone className="h-5 w-5" />
+            <Phone className="h-4 w-4" />
             <span className="font-semibold hidden sm:inline">+91 90030 73491</span>
           </a>
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 py-8 md:py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-16 relative">
         {/* Hero Section */}
-        <div className="text-center mb-12 md:mb-16 animate-in fade-in slide-in-from-top duration-700">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full mb-4 border border-primary/20">
-            <Heart className="h-4 w-4 text-primary" />
-            <span className="text-sm text-primary font-medium">Chennai's Most Trusted After-Death Care</span>
+        <div className="text-center mb-16 md:mb-20 animate-slide-in-from-top">
+          <div className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 rounded-full mb-6 border border-primary/20 backdrop-blur-sm shadow-[var(--shadow-soft)] hover:shadow-[var(--shadow-card)] transition-all duration-300">
+            <Sparkles className="h-4 w-4 text-primary animate-glow" />
+            <span className="text-sm font-semibold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+              Chennai's Premier Sacred Ritual Services
+            </span>
           </div>
-          <h2 className="text-4xl md:text-6xl font-bold text-foreground mb-4">
-            The Path to <span className="text-primary">Moksha</span>
+          <h2 className="text-5xl md:text-7xl font-bold text-foreground mb-6 leading-tight">
+            Honoring Mothers with{" "}
+            <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-glow">
+              Devotion
+            </span>
           </h2>
-          <p className="text-lg md:text-xl text-foreground/80 mb-2">
-            Guided with Tradition, Served with Empathy
+          <p className="text-xl md:text-2xl text-foreground/80 mb-3 font-light">
+            Sacred Ceremonies, Served with Compassion
           </p>
-          <p className="text-base text-primary/70 font-semibold mb-6">
-            पितृकर्मा मार्गः मोक्षाय
+          <p className="text-lg text-primary/80 font-semibold mb-8">
+            मातृभक्ति शरठस्थलम्
           </p>
-          <p className="text-muted-foreground max-w-2xl mx-auto mb-2">
-            Full-service Hindu funeral and ritual management. Chennai-based. NRI-friendly.
-          </p>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            Compassionate care when it matters most.
-          </p>
+          <div className="max-w-3xl mx-auto space-y-2">
+            <p className="text-lg text-muted-foreground">
+              Traditional Hindu ancestral ritual services with modern convenience.
+            </p>
+            <p className="text-base text-muted-foreground">
+              Chennai-based • NRI-friendly • Compassionate care when it matters most
+            </p>
+          </div>
         </div>
 
         {/* Booking Section */}
-        <div className="bg-card rounded-2xl shadow-[var(--shadow-elevated)] border border-border overflow-hidden animate-in fade-in slide-in-from-bottom duration-700">
-          <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-accent/10 px-6 py-8 md:px-8 border-b border-border">
-            <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
-              Book Your Ritual Slot
+        <div className="bg-[var(--gradient-card)] backdrop-blur-xl rounded-3xl shadow-[var(--shadow-elevated)] border border-border/50 overflow-hidden animate-slide-in-from-bottom relative group">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          
+          <div className="relative bg-gradient-to-r from-primary/10 via-accent/5 to-primary/10 px-8 py-10 md:px-10 border-b border-border/50 backdrop-blur-sm">
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <CalendarDays className="h-8 w-8 text-primary animate-float" />
+              <Sparkles className="h-5 w-5 text-accent animate-glow" />
+            </div>
+            <h3 className="text-3xl md:text-4xl font-bold text-center mb-3 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+              Book Your Sacred Ceremony
             </h3>
-            <p className="text-muted-foreground">
-              Select a date and choose your preferred time slot for the ceremony
+            <p className="text-center text-muted-foreground text-base">
+              Choose your preferred date and time slot for the traditional ritual
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-8 p-6 md:p-8">
+          <div className="grid md:grid-cols-2 gap-8 p-8 md:p-10 relative">
             {/* Calendar Section */}
-            <div className="animate-in fade-in slide-in-from-left duration-700 delay-100">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="h-1 w-8 bg-primary rounded"></div>
-                <h4 className="text-lg font-semibold text-foreground">Select Date</h4>
+            <div className="animate-slide-in-from-left space-y-4">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="h-1.5 w-12 bg-gradient-to-r from-primary to-accent rounded-full"></div>
+                <h4 className="text-xl font-bold text-foreground">Select Date</h4>
               </div>
-              <div className="flex justify-center bg-secondary/30 rounded-xl p-4">
+              <div className="flex justify-center bg-gradient-to-br from-secondary/50 to-secondary/30 backdrop-blur-sm rounded-2xl p-6 border border-border/50 shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-elevated)] transition-all duration-300">
                 <Calendar
                   mode="single"
                   selected={selectedDate}
@@ -183,17 +205,17 @@ const Index = () => {
             </div>
 
             {/* Time Slots Section */}
-            <div className="animate-in fade-in slide-in-from-right duration-700 delay-200">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="h-1 w-8 bg-primary rounded"></div>
-                <h4 className="text-lg font-semibold text-foreground">Available Time Slots</h4>
+            <div className="animate-slide-in-from-right space-y-4">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="h-1.5 w-12 bg-gradient-to-r from-primary to-accent rounded-full"></div>
+                <h4 className="text-xl font-bold text-foreground">Available Slots</h4>
               </div>
-              <div className="bg-secondary/30 rounded-xl p-4 mb-4">
-                <p className="text-sm font-medium text-foreground mb-1">
+              <div className="bg-gradient-to-br from-primary/10 to-accent/10 backdrop-blur-sm rounded-2xl p-5 mb-6 border border-primary/20 shadow-[var(--shadow-soft)]">
+                <p className="text-base font-semibold text-foreground mb-2">
                   {format(selectedDate, "EEEE, MMMM d, yyyy")}
                 </p>
-                <p className="text-xs text-muted-foreground">
-                  Select your preferred time for the ritual ceremony
+                <p className="text-sm text-muted-foreground">
+                  Choose your preferred ceremony time
                 </p>
               </div>
 
@@ -227,22 +249,30 @@ const Index = () => {
         </div>
 
         {/* Info Section */}
-        <div className="mt-12 text-center max-w-3xl mx-auto animate-in fade-in slide-in-from-bottom duration-700 delay-300">
-          <div className="bg-card rounded-xl p-6 md:p-8 shadow-[var(--shadow-card)] border border-border">
-            <h3 className="text-xl font-semibold text-foreground mb-3">
-              Need Assistance?
-            </h3>
-            <p className="text-muted-foreground mb-4">
-              Our team is available to help you with booking and answer any questions about the ritual ceremonies.
-            </p>
-            <Button 
-              onClick={() => window.location.href = 'tel:+919003073491'}
-              className="gap-2"
-              size="lg"
-            >
-              <Phone className="h-4 w-4" />
-              Call +91 90030 73491
-            </Button>
+        <div className="mt-16 text-center max-w-4xl mx-auto animate-slide-in-from-bottom">
+          <div className="bg-[var(--gradient-card)] backdrop-blur-xl rounded-3xl p-8 md:p-12 shadow-[var(--shadow-elevated)] border border-border/50 relative overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="relative z-10">
+              <div className="flex justify-center mb-6">
+                <div className="p-4 bg-gradient-to-r from-primary/20 to-accent/20 rounded-full">
+                  <Phone className="h-8 w-8 text-primary animate-float" />
+                </div>
+              </div>
+              <h3 className="text-3xl font-bold text-foreground mb-4">
+                Need Assistance?
+              </h3>
+              <p className="text-lg text-muted-foreground mb-6 max-w-2xl mx-auto">
+                Our compassionate team is here to guide you through the sacred ceremony booking process and answer all your questions.
+              </p>
+              <Button 
+                onClick={() => window.location.href = 'tel:+919003073491'}
+                className="gap-2 bg-gradient-to-r from-primary to-accent hover:shadow-[var(--shadow-glow)] transition-all duration-300 hover:scale-105 text-lg px-8 py-6"
+                size="lg"
+              >
+                <Phone className="h-5 w-5" />
+                Call +91 90030 73491
+              </Button>
+            </div>
           </div>
         </div>
       </div>

@@ -51,7 +51,10 @@ export default function ConfirmBooking() {
         })
         .eq("id", bookingId);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase error:", error);
+        throw error;
+      }
 
       toast.success("Booking confirmed!");
 
@@ -69,7 +72,8 @@ export default function ConfirmBooking() {
         year: "numeric",
       });
 
-      const confirmMessage = `Your booking is confirmed for ${slotTime} on ${formattedDate}. Please complete the payment to finalize your booking. Thank you!`;
+      const paymentUrl = `${window.location.origin}/payment-qr.png`;
+      const confirmMessage = `✅ Your booking is confirmed!\n\n📅 Date: ${formattedDate}\n⏰ Time: ${slotTime}\n\n💳 Please proceed with the payment using the QR code:\n${paymentUrl}\n\nThank you for booking with Pitru Karma!`;
       const whatsappUrl = `https://web.whatsapp.com/send?phone=9003073491&text=${encodeURIComponent(confirmMessage)}`;
       
       window.open(whatsappUrl, "_blank");
@@ -77,9 +81,9 @@ export default function ConfirmBooking() {
       setTimeout(() => {
         navigate("/");
       }, 2000);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error confirming booking:", error);
-      toast.error("Failed to confirm booking");
+      toast.error(error?.message || "Failed to confirm booking. Please try again.");
     } finally {
       setProcessing(false);
     }

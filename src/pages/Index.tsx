@@ -33,10 +33,32 @@ const Index = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [bookingSystemEnabled, setBookingSystemEnabled] = useState(true);
+  const [maintenanceMode, setMaintenanceMode] = useState(false);
   useEffect(() => {
+    checkSystemSettings();
     fetchBookings();
     subscribeToBookings();
   }, [selectedDate]);
+
+  const checkSystemSettings = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("admin_settings")
+        .select("*")
+        .in("setting_key", ["booking_system_enabled", "maintenance_mode"]);
+
+      if (error) throw error;
+
+      const bookingEnabled = data?.find((s) => s.setting_key === "booking_system_enabled");
+      const maintenance = data?.find((s) => s.setting_key === "maintenance_mode");
+
+      if (bookingEnabled) setBookingSystemEnabled(bookingEnabled.setting_value === "true");
+      if (maintenance) setMaintenanceMode(maintenance.setting_value === "true");
+    } catch (error) {
+      console.error("Error checking system settings:", error);
+    }
+  };
   const fetchBookings = async () => {
     setLoading(true);
     try {
@@ -69,6 +91,16 @@ const Index = () => {
     };
   };
   const handleSlotClick = (slotKey: string) => {
+    if (maintenanceMode) {
+      toast.error("System is currently under maintenance. Please try again later.");
+      return;
+    }
+
+    if (!bookingSystemEnabled) {
+      toast.error("Booking system is currently disabled. Please contact admin.");
+      return;
+    }
+
     const booking = bookings.find(b => b.slot_key === slotKey);
     if (!booking || booking.status === "expired") {
       setSelectedSlot(slotKey);
@@ -95,6 +127,13 @@ const Index = () => {
     }
   };
   return <div className="min-h-screen bg-[var(--gradient-hero)] relative overflow-hidden">
+      {/* Maintenance Banner */}
+      {maintenanceMode && (
+        <div className="bg-destructive text-destructive-foreground py-3 px-4 text-center font-semibold sticky top-0 z-50">
+          ⚠️ System is currently under maintenance. Booking functionality is disabled.
+        </div>
+      )}
+
       {/* Decorative gradient orbs */}
       <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-float" />
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-accent/5 rounded-full blur-3xl animate-float" style={{

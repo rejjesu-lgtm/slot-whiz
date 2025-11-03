@@ -56,8 +56,6 @@ export default function ConfirmBooking() {
         throw error;
       }
 
-      toast.success("Booking confirmed!");
-
       const slotLabels: Record<string, string> = {
         morning: "6AM - 1PM",
         afternoon: "7AM - 2PM",
@@ -75,11 +73,11 @@ export default function ConfirmBooking() {
       const confirmMessage = `✅ Your booking is confirmed!\n\n📅 Date: ${formattedDate}\n⏰ Time: ${slotTime}\n\n💳 Please proceed with the payment using the QR code:\n${paymentUrl}\n\nThank you for booking with MBSS!`;
       const whatsappUrl = `https://wa.me/send?phone=9003073491&text=${encodeURIComponent(confirmMessage)}`;
       
-      window.open(whatsappUrl, "_blank");
+      toast.success("Booking confirmed! Redirecting to WhatsApp...");
       
       setTimeout(() => {
-        navigate("/");
-      }, 2000);
+        window.location.href = whatsappUrl;
+      }, 500);
     } catch (error: any) {
       console.error("Error confirming booking:", error);
       toast.error(error?.message || "Failed to confirm booking. Please try again.");

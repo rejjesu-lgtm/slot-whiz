@@ -59,9 +59,8 @@ export default function ConfirmBooking() {
       toast.success("Booking confirmed!");
 
       const slotLabels: Record<string, string> = {
-        morning: "6AM - 10AM",
-        afternoon: "11AM - 3PM",
-        evening: "4PM - 7PM",
+        morning: "6AM - 1PM",
+        afternoon: "7AM - 2PM",
       };
 
       const slotTime = slotLabels[booking.slot_key] || booking.slot_key;
@@ -112,9 +111,8 @@ export default function ConfirmBooking() {
 
   const getSlotLabel = (key: string) => {
     const labels: Record<string, string> = {
-      morning: "6AM - 10AM",
-      afternoon: "11AM - 3PM",
-      evening: "4PM - 7PM",
+      morning: "6AM - 1PM",
+      afternoon: "7AM - 2PM",
     };
     return labels[key] || key;
   };

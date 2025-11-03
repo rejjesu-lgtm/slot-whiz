@@ -9,16 +9,12 @@ import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 const SLOTS = [{
   key: "morning",
-  time: "6AM - 10AM",
+  time: "6AM - 1PM",
   label: "Morning Slot"
 }, {
   key: "afternoon",
-  time: "11AM - 3PM",
+  time: "7AM - 2PM",
   label: "Afternoon Slot"
-}, {
-  key: "evening",
-  time: "4PM - 7PM",
-  label: "Evening Slot"
 }];
 interface Booking {
   id: string;

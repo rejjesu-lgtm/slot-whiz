@@ -14,13 +14,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_settings: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          setting_key: string
+          setting_value: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          setting_key: string
+          setting_value: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          setting_key?: string
+          setting_value?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       bookings: {
         Row: {
           address: string
+          admin_notes: string | null
+          admin_override: boolean | null
           booking_date: string
           confirmation_timestamp: string | null
           created_at: string
           id: string
+          last_modified_at: string | null
+          last_modified_by: string | null
           phone_number: string
           slot_key: string
           status: string
@@ -29,10 +60,14 @@ export type Database = {
         }
         Insert: {
           address: string
+          admin_notes?: string | null
+          admin_override?: boolean | null
           booking_date: string
           confirmation_timestamp?: string | null
           created_at?: string
           id?: string
+          last_modified_at?: string | null
+          last_modified_by?: string | null
           phone_number: string
           slot_key: string
           status?: string
@@ -41,10 +76,14 @@ export type Database = {
         }
         Update: {
           address?: string
+          admin_notes?: string | null
+          admin_override?: boolean | null
           booking_date?: string
           confirmation_timestamp?: string | null
           created_at?: string
           id?: string
+          last_modified_at?: string | null
+          last_modified_by?: string | null
           phone_number?: string
           slot_key?: string
           status?: string

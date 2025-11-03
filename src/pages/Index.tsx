@@ -40,19 +40,15 @@ const Index = () => {
     fetchBookings();
     subscribeToBookings();
   }, [selectedDate]);
-
   const checkSystemSettings = async () => {
     try {
-      const { data, error } = await supabase
-        .from("admin_settings")
-        .select("*")
-        .in("setting_key", ["booking_system_enabled", "maintenance_mode"]);
-
+      const {
+        data,
+        error
+      } = await supabase.from("admin_settings").select("*").in("setting_key", ["booking_system_enabled", "maintenance_mode"]);
       if (error) throw error;
-
-      const bookingEnabled = data?.find((s) => s.setting_key === "booking_system_enabled");
-      const maintenance = data?.find((s) => s.setting_key === "maintenance_mode");
-
+      const bookingEnabled = data?.find(s => s.setting_key === "booking_system_enabled");
+      const maintenance = data?.find(s => s.setting_key === "maintenance_mode");
       if (bookingEnabled) setBookingSystemEnabled(bookingEnabled.setting_value === "true");
       if (maintenance) setMaintenanceMode(maintenance.setting_value === "true");
     } catch (error) {
@@ -95,12 +91,10 @@ const Index = () => {
       toast.error("System is currently under maintenance. Please try again later.");
       return;
     }
-
     if (!bookingSystemEnabled) {
       toast.error("Booking system is currently disabled. Please contact admin.");
       return;
     }
-
     const booking = bookings.find(b => b.slot_key === slotKey);
     if (!booking || booking.status === "expired") {
       setSelectedSlot(slotKey);
@@ -128,11 +122,9 @@ const Index = () => {
   };
   return <div className="min-h-screen bg-[var(--gradient-hero)] relative overflow-hidden">
       {/* Maintenance Banner */}
-      {maintenanceMode && (
-        <div className="bg-destructive text-destructive-foreground py-3 px-4 text-center font-semibold sticky top-0 z-50">
+      {maintenanceMode && <div className="bg-destructive text-destructive-foreground py-3 px-4 text-center font-semibold sticky top-0 z-50">
           ⚠️ System is currently under maintenance. Booking functionality is disabled.
-        </div>
-      )}
+        </div>}
 
       {/* Decorative gradient orbs */}
       <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-float" />
@@ -200,9 +192,7 @@ const Index = () => {
             <h3 className="text-3xl md:text-4xl font-bold text-center mb-3 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
               Book Your Sacred Ceremony
             </h3>
-            <p className="text-center text-muted-foreground text-base">
-              Choose your preferred date and time slot for the traditional ritual
-            </p>
+            <p className="text-center text-muted-foreground text-base">Choose your preferred date and time slot</p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-8 p-8 md:p-10 relative">
@@ -227,9 +217,7 @@ const Index = () => {
                 <p className="text-base font-semibold text-foreground mb-2">
                   {format(selectedDate, "EEEE, MMMM d, yyyy")}
                 </p>
-                <p className="text-sm text-muted-foreground">
-                  Choose your preferred ceremony time
-                </p>
+                <p className="text-sm text-muted-foreground">Choose your preferred time</p>
               </div>
 
               {loading ? <div className="flex items-center justify-center py-12">

@@ -131,10 +131,12 @@ export const BookingModal = ({
       const message = `Hi, I want to confirm my booking for the ${slotTime} on ${formattedDate}. Please click to confirm: ${confirmLink}`;
       const whatsappUrl = `https://wa.me/send?phone=9003073491&text=${encodeURIComponent(message)}`;
 
-      // Open WhatsApp in new tab
-      window.open(whatsappUrl, "_blank");
+      toast.success("Redirecting to WhatsApp...");
 
-      toast.success("Booking created! Please confirm via WhatsApp within 12 hours.");
+      // Redirect to WhatsApp (works better on mobile than window.open)
+      setTimeout(() => {
+        window.location.href = whatsappUrl;
+      }, 500);
 
       setFormData({ name: "", address: "", phone: "" });
       onSuccess();

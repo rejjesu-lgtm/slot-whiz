@@ -159,14 +159,10 @@ const Index = () => {
         <div className="text-center mb-16 md:mb-20 animate-slide-in-from-top">
           <div className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 rounded-full mb-6 border border-primary/20 backdrop-blur-sm shadow-[var(--shadow-soft)] hover:shadow-[var(--shadow-card)] transition-all duration-300">
             <Sparkles className="h-4 w-4 text-primary animate-glow" />
-            <span className="text-sm font-semibold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-              Chennai's Premier Ritual Booking Services
-            </span>
+            <span className="text-sm font-semibold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">Chennai's Premier Srashtam Services</span>
           </div>
           <h2 className="text-5xl md:text-7xl font-bold text-foreground mb-6 leading-tight">
-            <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-glow">
-              Hindu Ritual Booking
-            </span>
+            <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-glow">Hindu Srashtam Booking</span>
           </h2>
           <p className="text-xl md:text-2xl text-foreground/80 mb-3 font-light">
             Sacred Ceremonies, Served with Compassion

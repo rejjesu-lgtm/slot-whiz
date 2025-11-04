@@ -132,10 +132,7 @@ const Index = () => {
       <header className="border-b border-border/50 bg-card/60 backdrop-blur-xl sticky top-0 z-50 shadow-[var(--shadow-soft)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3 group cursor-pointer">
-            <div className="relative">
-              <Heart className="h-8 w-8 text-primary group-hover:scale-110 transition-transform duration-300" />
-              <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl group-hover:bg-primary/30 transition-all" />
-            </div>
+            
             <div>
               <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
                 Mathru Bakthi Sharathasthalam
@@ -155,10 +152,10 @@ const Index = () => {
         <div className="text-center mb-16 md:mb-20 animate-slide-in-from-top">
           <div className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 rounded-full mb-6 border border-primary/20 backdrop-blur-sm shadow-[var(--shadow-soft)] hover:shadow-[var(--shadow-card)] transition-all duration-300">
             <Sparkles className="h-4 w-4 text-primary animate-glow" />
-            <span className="text-sm font-semibold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">Chennai's Premier Srashtam Services</span>
+            <span className="text-sm font-semibold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">Chennai's Premier Shartham Services</span>
           </div>
           <h2 className="text-5xl md:text-7xl font-bold text-foreground mb-6 leading-tight">
-            <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-glow">Hindu Srashtam Booking</span>
+            <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-glow">Hindu Shartham Booking</span>
           </h2>
           <p className="text-xl md:text-2xl text-foreground/80 mb-3 font-light">
             Sacred Ceremonies, Served with Compassion

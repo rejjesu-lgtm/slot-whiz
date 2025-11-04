@@ -143,9 +143,9 @@ const Index = () => {
               
             </div>
           </div>
-          <a href="tel:+919003073491" className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-primary to-accent text-primary-foreground hover:shadow-[var(--shadow-glow)] transition-all duration-300 hover:scale-105">
+          <a href="tel:+919094257006" className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-primary to-accent text-primary-foreground hover:shadow-[var(--shadow-glow)] transition-all duration-300 hover:scale-105">
             <Phone className="h-4 w-4" />
-            <span className="font-semibold hidden sm:inline">+91 90030 73491</span>
+            <span className="font-semibold hidden sm:inline">+91 90942 57006</span>
           </a>
         </div>
       </header>
@@ -241,9 +241,9 @@ const Index = () => {
               <p className="text-lg text-muted-foreground mb-6 max-w-2xl mx-auto">
                 Our compassionate team is here to guide you through the sacred ceremony booking process and answer all your questions.
               </p>
-              <Button onClick={() => window.location.href = 'tel:+919003073491'} className="gap-2 bg-gradient-to-r from-primary to-accent hover:shadow-[var(--shadow-glow)] transition-all duration-300 hover:scale-105 text-lg px-8 py-6" size="lg">
+              <Button onClick={() => window.location.href = 'tel:+919094257006'} className="gap-2 bg-gradient-to-r from-primary to-accent hover:shadow-[var(--shadow-glow)] transition-all duration-300 hover:scale-105 text-lg px-8 py-6" size="lg">
                 <Phone className="h-5 w-5" />
-                Call +91 90030 73491
+                Call +91 90942 57006
               </Button>
             </div>
           </div>

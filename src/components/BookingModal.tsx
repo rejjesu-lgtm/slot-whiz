@@ -129,7 +129,7 @@ export const BookingModal = ({
       });
 
       const message = `Hi, I want to confirm my booking for the ${slotTime} on ${formattedDate}. Please click to confirm: ${confirmLink}`;
-      const whatsappUrl = `https://wa.me/+919003073491?text=${encodeURIComponent(message)}`;
+      const whatsappUrl = `https://wa.me/+919094257006?text=${encodeURIComponent(message)}`;
 
       toast.success("Redirecting to WhatsApp...");
 

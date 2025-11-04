@@ -158,7 +158,7 @@ const Index = () => {
             <span className="text-sm font-semibold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">Chennai's Premier Srashtam Services</span>
           </div>
           <h2 className="text-5xl md:text-7xl font-bold text-foreground mb-6 leading-tight">
-            <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-glow">Hindu Srashtam Booking</span>
+            <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-glow">Hindu Sharatham Booking</span>
           </h2>
           <p className="text-xl md:text-2xl text-foreground/80 mb-3 font-light">
             Sacred Ceremonies, Served with Compassion

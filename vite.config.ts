@@ -12,7 +12,7 @@ export default defineConfig(({ mode }) => ({
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
 
   // 🔑 ADD THIS LINE TO SET THE BASE PATH FOR GITHUB PAGES 🔑
-  base: '/slot-whiz/', 
+  base: "/slot-whiz/", 
 
   resolve: {
     alias: {

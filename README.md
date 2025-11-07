@@ -1,73 +1,46 @@
-# Welcome to your Lovable project
+# Slot Whiz
 
-## Project info
+React + Vite application for managing slot bookings. The project is ready for continuous deployment to GitHub Pages, including support for a custom domain (`mbss.in`).
 
-**URL**: https://lovable.dev/projects/9a4e1912-ab70-4d39-af2e-d9e9a0091557
-
-## How can I edit this code?
-
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/9a4e1912-ab70-4d39-af2e-d9e9a0091557) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+## Getting Started
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
 git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+cd slot-whiz
+npm install
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+Open `http://localhost:5173` to develop locally.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Project Structure
 
-**Use GitHub Codespaces**
+- `src/` — application source code (React + TypeScript + shadcn/ui)
+- `public/` — static assets copied as-is during build (includes `CNAME`)
+- `supabase/` — edge functions and SQL migrations
+- `dist/` — production build output
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Available Scripts
 
-## What technologies are used for this project?
+- `npm run dev` — start the local development server
+- `npm run build` — create an optimized production build in `dist`
+- `npm run preview` — preview the production build locally
+- `npm run lint` — run ESLint across the repo
 
-This project is built with:
+## GitHub Pages Deployment
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+This repository ships with an automated GitHub Actions workflow in `.github/workflows/deploy.yml`.
 
-## How can I deploy this project?
+1. Push to the `main` branch (or trigger the workflow manually from the Actions tab).
+2. The workflow installs dependencies, builds the site, and publishes `dist/` to GitHub Pages using the new Pages deployment APIs.
+3. The workflow automatically determines the base path:
+   - If `public/CNAME` (or root `CNAME`) exists, the build uses `/`, suitable for the custom domain `mbss.in`.
+   - Otherwise it defaults to `/<repo-name>/`, which matches standard project pages.
 
-Simply open [Lovable](https://lovable.dev/projects/9a4e1912-ab70-4d39-af2e-d9e9a0091557) and click on Share -> Publish.
+You can override the base path manually by setting the `BASE_PATH` environment variable when running `npm run build`.
 
-## Can I connect a custom domain to my Lovable project?
+## Troubleshooting
 
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+- Ensure Node.js 18+ is installed locally (`nvm install 20` is recommended).
+- After updating dependencies, re-run `npm run build` to confirm the production bundle succeeds.
+- If you change the custom domain, update both `CNAME` at the repository root and `public/CNAME` so the workflow deploys it with the site.

@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import animatePlugin from "tailwindcss-animate";
 
 export default {
   darkMode: ["class"],
@@ -74,32 +75,32 @@ export default {
         },
         "fade-in": {
           "0%": { opacity: "0", transform: "translateY(10px)" },
-          "100%": { opacity: "1", transform: "translateY(0)" }
+          "100%": { opacity: "1", transform: "translateY(0)" },
         },
         "slide-in-from-top": {
           "0%": { transform: "translateY(-20px)", opacity: "0" },
-          "100%": { transform: "translateY(0)", opacity: "1" }
+          "100%": { transform: "translateY(0)", opacity: "1" },
         },
         "slide-in-from-bottom": {
           "0%": { transform: "translateY(20px)", opacity: "0" },
-          "100%": { transform: "translateY(0)", opacity: "1" }
+          "100%": { transform: "translateY(0)", opacity: "1" },
         },
         "slide-in-from-left": {
           "0%": { transform: "translateX(-20px)", opacity: "0" },
-          "100%": { transform: "translateX(0)", opacity: "1" }
+          "100%": { transform: "translateX(0)", opacity: "1" },
         },
         "slide-in-from-right": {
           "0%": { transform: "translateX(20px)", opacity: "0" },
-          "100%": { transform: "translateX(0)", opacity: "1" }
+          "100%": { transform: "translateX(0)", opacity: "1" },
         },
-        "float": {
+        float: {
           "0%, 100%": { transform: "translateY(0)" },
-          "50%": { transform: "translateY(-10px)" }
+          "50%": { transform: "translateY(-10px)" },
         },
-        "glow": {
+        glow: {
           "0%, 100%": { filter: "brightness(1)" },
-          "50%": { filter: "brightness(1.2)" }
-        }
+          "50%": { filter: "brightness(1.2)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -114,5 +115,5 @@ export default {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [animatePlugin],
 } satisfies Config;

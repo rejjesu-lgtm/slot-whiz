@@ -141,7 +141,7 @@ export const BookingModal = ({
       setFormData({ name: "", address: "", phone: "" });
       onSuccess();
       onClose();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error creating booking:", error);
       toast.error("Failed to create booking. Please try again.");
     } finally {

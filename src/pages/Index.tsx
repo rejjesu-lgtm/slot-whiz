@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { SlotCard } from "@/components/SlotCard";
 import { BookingModal } from "@/components/BookingModal";
@@ -7,22 +7,23 @@ import { toast } from "sonner";
 import { Phone, Heart, Sparkles, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
-const SLOTS = [{
-  key: "morning",
-  time: "6AM - 1PM",
-  label: "Morning Slot"
-}, {
-  key: "afternoon",
-  time: "7AM - 2PM",
-  label: "Afternoon Slot"
-}];
-interface Booking {
-  id: string;
-  slot_key: string;
-  status: string;
-  user_name: string;
-  whatsapp_sent_at: string;
-}
+import type { Tables } from "@/integrations/supabase/types";
+
+const SLOTS = [
+  {
+    key: "morning",
+    time: "6AM - 1PM",
+    label: "Morning Slot",
+  },
+  {
+    key: "afternoon",
+    time: "7AM - 2PM",
+    label: "Afternoon Slot",
+  },
+] as const;
+
+type Booking = Tables<"bookings">;
+
 const Index = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -31,57 +32,80 @@ const Index = () => {
   const [loading, setLoading] = useState(false);
   const [bookingSystemEnabled, setBookingSystemEnabled] = useState(true);
   const [maintenanceMode, setMaintenanceMode] = useState(false);
-  useEffect(() => {
-    checkSystemSettings();
-    fetchBookings();
-    subscribeToBookings();
-  }, [selectedDate]);
-  const checkSystemSettings = async () => {
+  const dateString = useMemo(() => selectedDate.toISOString().split("T")[0], [selectedDate]);
+
+  const checkSystemSettings = useCallback(async () => {
     try {
-      const {
-        data,
-        error
-      } = await supabase.from("admin_settings").select("*").in("setting_key", ["booking_system_enabled", "maintenance_mode"]);
+      const { data, error } = await supabase
+        .from("admin_settings")
+        .select("*")
+        .in("setting_key", ["booking_system_enabled", "maintenance_mode"]);
+
       if (error) throw error;
-      const bookingEnabled = data?.find(s => s.setting_key === "booking_system_enabled");
-      const maintenance = data?.find(s => s.setting_key === "maintenance_mode");
+
+      const bookingEnabled = data?.find((setting) => setting.setting_key === "booking_system_enabled");
+      const maintenance = data?.find((setting) => setting.setting_key === "maintenance_mode");
+
       if (bookingEnabled) setBookingSystemEnabled(bookingEnabled.setting_value === "true");
       if (maintenance) setMaintenanceMode(maintenance.setting_value === "true");
     } catch (error) {
       console.error("Error checking system settings:", error);
     }
-  };
-  const fetchBookings = async () => {
+  }, []);
+
+  const fetchBookings = useCallback(async () => {
     setLoading(true);
+
     try {
-      const dateStr = selectedDate.toISOString().split("T")[0];
-      const {
-        data,
-        error
-      } = await supabase.from("bookings").select("*").eq("booking_date", dateStr);
+      const { data, error } = await supabase
+        .from("bookings")
+        .select("*")
+        .eq("booking_date", dateString);
+
       if (error) throw error;
-      setBookings(data || []);
-    } catch (error: any) {
+
+      setBookings(data ?? []);
+    } catch (error) {
       console.error("Error fetching bookings:", error);
       toast.error("Failed to load bookings");
     } finally {
       setLoading(false);
     }
-  };
-  const subscribeToBookings = () => {
-    const dateStr = selectedDate.toISOString().split("T")[0];
-    const channel = supabase.channel(`bookings-${dateStr}`).on("postgres_changes", {
-      event: "*",
-      schema: "public",
-      table: "bookings",
-      filter: `booking_date=eq.${dateStr}`
-    }, () => {
-      fetchBookings();
-    }).subscribe();
+  }, [dateString]);
+
+  const subscribeToBookings = useCallback(() => {
+    const channel = supabase
+      .channel(`bookings-${dateString}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "bookings",
+          filter: `booking_date=eq.${dateString}`,
+        },
+        () => {
+          void fetchBookings();
+        },
+      )
+      .subscribe();
+
+    return channel;
+  }, [dateString, fetchBookings]);
+
+  useEffect(() => {
+    void checkSystemSettings();
+  }, [checkSystemSettings]);
+
+  useEffect(() => {
+    void fetchBookings();
+    const channel = subscribeToBookings();
+
     return () => {
       supabase.removeChannel(channel);
     };
-  };
+  }, [fetchBookings, subscribeToBookings]);
+
   const handleSlotClick = (slotKey: string) => {
     if (maintenanceMode) {
       toast.error("System is currently under maintenance. Please try again later.");
@@ -100,20 +124,20 @@ const Index = () => {
     }
   };
   const getSlotStatus = (slotKey: string) => {
-    const booking = bookings.find(b => b.slot_key === slotKey);
-    if (!booking || booking.status === "expired") return "available";
-    return booking.status;
+    const bookingForSlot = bookings.find((entry) => entry.slot_key === slotKey);
+    if (!bookingForSlot || bookingForSlot.status === "expired") return "available";
+    return bookingForSlot.status;
   };
   const getBookingTimestamp = (slotKey: string) => {
-    const booking = bookings.find(b => b.slot_key === slotKey);
-    return booking?.whatsapp_sent_at;
+    const bookingForSlot = bookings.find((entry) => entry.slot_key === slotKey);
+    return bookingForSlot?.whatsapp_sent_at ?? undefined;
   };
   const expireBooking = async () => {
     try {
-      await supabase.functions.invoke('expire-bookings');
-      fetchBookings();
+      await supabase.functions.invoke("expire-bookings");
+      await fetchBookings();
     } catch (error) {
-      console.error('Error expiring bookings:', error);
+      console.error("Error expiring bookings:", error);
     }
   };
   return <div className="min-h-screen bg-[var(--gradient-hero)] relative overflow-hidden">

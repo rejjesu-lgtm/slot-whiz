@@ -1,27 +1,34 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Calendar, Clock, User, MapPin, Phone, Loader2 } from "lucide-react";
+import type { Tables } from "@/integrations/supabase/types";
 
 export default function ConfirmBooking() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const [booking, setBooking] = useState<any>(null);
+  const [booking, setBooking] = useState<Tables<"bookings"> | null>(null);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
 
   const bookingId = searchParams.get("id");
 
-  useEffect(() => {
-    if (bookingId) {
-      fetchBooking();
-    }
-  }, [bookingId]);
+  const slotLabels = useMemo<Record<string, string>>(
+    () => ({
+      morning: "6AM - 1PM",
+      afternoon: "7AM - 2PM",
+    }),
+    [],
+  );
 
-  const fetchBooking = async () => {
+  const fetchBooking = useCallback(async () => {
+    if (!bookingId) {
+      return;
+    }
+
     try {
       const { data, error } = await supabase
         .from("bookings")
@@ -38,9 +45,18 @@ export default function ConfirmBooking() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [bookingId, navigate]);
+
+  useEffect(() => {
+    void fetchBooking();
+  }, [fetchBooking]);
 
   const handleConfirm = async () => {
+    if (!bookingId || !booking) {
+      toast.error("Booking not found");
+      return;
+    }
+
     setProcessing(true);
     try {
       const { error } = await supabase
@@ -55,11 +71,6 @@ export default function ConfirmBooking() {
         console.error("Supabase error:", error);
         throw error;
       }
-
-      const slotLabels: Record<string, string> = {
-        morning: "6AM - 1PM",
-        afternoon: "7AM - 2PM",
-      };
 
       const slotTime = slotLabels[booking.slot_key] || booking.slot_key;
       const formattedDate = new Date(booking.booking_date).toLocaleDateString("en-US", {
@@ -78,15 +89,21 @@ export default function ConfirmBooking() {
       setTimeout(() => {
         window.location.href = whatsappUrl;
       }, 500);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error confirming booking:", error);
-      toast.error(error?.message || "Failed to confirm booking. Please try again.");
+      const message = error instanceof Error ? error.message : "Failed to confirm booking. Please try again.";
+      toast.error(message);
     } finally {
       setProcessing(false);
     }
   };
 
   const handleDecline = async () => {
+    if (!bookingId) {
+      toast.error("Booking not found");
+      return;
+    }
+
     setProcessing(true);
     try {
       const { error } = await supabase
@@ -107,13 +124,10 @@ export default function ConfirmBooking() {
     }
   };
 
-  const getSlotLabel = (key: string) => {
-    const labels: Record<string, string> = {
-      morning: "6AM - 1PM",
-      afternoon: "7AM - 2PM",
-    };
-    return labels[key] || key;
-  };
+  const getSlotLabel = useCallback(
+    (key: string) => slotLabels[key] || key,
+    [slotLabels],
+  );
 
   if (loading) {
     return (

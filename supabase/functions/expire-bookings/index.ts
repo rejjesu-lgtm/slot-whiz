@@ -69,12 +69,14 @@ const handler = async (req: Request): Promise<Response> => {
       }
     );
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in expire-bookings:', error);
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    const stack = error instanceof Error ? error.stack : undefined;
     return new Response(
       JSON.stringify({ 
-        error: error.message,
-        stack: error.stack 
+        error: message,
+        stack, 
       }),
       { 
         status: 500, 

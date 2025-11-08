@@ -14,8 +14,14 @@ export default function ConfirmBooking() {
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
 
   const bookingId = searchParams.get("id");
+
+  // Ensure component has mounted
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const slotLabels = useMemo<Record<string, string>>(
     () => ({
@@ -33,6 +39,13 @@ export default function ConfirmBooking() {
     }
 
     try {
+      // Check if Supabase is available
+      if (!supabase) {
+        setError("Database connection error. Please refresh the page.");
+        setLoading(false);
+        return;
+      }
+
       const { data, error: fetchError } = await supabase
         .from("bookings")
         .select("*")
@@ -42,11 +55,13 @@ export default function ConfirmBooking() {
       if (fetchError) {
         console.error("Error fetching booking:", fetchError);
         setError("Booking not found. It may have expired or been cancelled.");
+        setLoading(false);
         return;
       }
 
       if (!data) {
         setError("Booking not found");
+        setLoading(false);
         return;
       }
 
@@ -142,10 +157,25 @@ export default function ConfirmBooking() {
     [slotLabels],
   );
 
+  // Always show something, even if React hasn't fully initialized
+  if (!mounted) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
+          <p className="text-muted-foreground">Loading booking details...</p>
+        </div>
       </div>
     );
   }

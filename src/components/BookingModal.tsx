@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,6 +31,7 @@ export const BookingModal = ({
   selectedDate,
   onSuccess,
 }: BookingModalProps) => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
     address: "",
@@ -37,9 +39,27 @@ export const BookingModal = ({
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  const checkAuth = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    setUserId(session?.user?.id || null);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Check authentication
+    if (!userId) {
+      toast.error("Please sign in to make a booking");
+      navigate("/auth");
+      onClose();
+      return;
+    }
     
     // Validate form
     try {
@@ -79,6 +99,7 @@ export const BookingModal = ({
 
       // Create or update booking
       const bookingData = {
+        user_id: userId,
         user_name: formData.name.trim(),
         address: formData.address.trim(),
         phone_number: formData.phone.trim(),

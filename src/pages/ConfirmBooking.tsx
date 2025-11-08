@@ -13,6 +13,7 @@ export default function ConfirmBooking() {
   const [booking, setBooking] = useState<Tables<"bookings"> | null>(null);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const bookingId = searchParams.get("id");
 
@@ -26,26 +27,38 @@ export default function ConfirmBooking() {
 
   const fetchBooking = useCallback(async () => {
     if (!bookingId) {
+      setError("No booking ID provided");
+      setLoading(false);
       return;
     }
 
     try {
-      const { data, error } = await supabase
+      const { data, error: fetchError } = await supabase
         .from("bookings")
         .select("*")
         .eq("id", bookingId)
         .single();
 
-      if (error) throw error;
+      if (fetchError) {
+        console.error("Error fetching booking:", fetchError);
+        setError("Booking not found. It may have expired or been cancelled.");
+        return;
+      }
+
+      if (!data) {
+        setError("Booking not found");
+        return;
+      }
+
       setBooking(data);
-    } catch (error) {
-      console.error("Error fetching booking:", error);
-      toast.error("Booking not found");
-      navigate("/");
+      setError(null);
+    } catch (err) {
+      console.error("Error fetching booking:", err);
+      setError("Failed to load booking. Please try again.");
     } finally {
       setLoading(false);
     }
-  }, [bookingId, navigate]);
+  }, [bookingId]);
 
   useEffect(() => {
     void fetchBooking();
@@ -137,8 +150,43 @@ export default function ConfirmBooking() {
     );
   }
 
-  if (!booking) {
-    return null;
+  if (error || !booking) {
+    return (
+      <div className="min-h-screen bg-background py-12 px-4">
+        <div className="max-w-2xl mx-auto">
+          <Card className="border-2 border-destructive/20 shadow-xl">
+            <CardHeader className="text-center bg-gradient-to-br from-destructive/10 to-destructive/5">
+              <CardTitle className="text-3xl font-bold text-destructive">
+                Booking Not Found
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6 space-y-6">
+              <div className="text-center space-y-4">
+                <p className="text-muted-foreground">
+                  {error || "The booking you're looking for could not be found."}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  This could happen if:
+                </p>
+                <ul className="text-sm text-muted-foreground list-disc list-inside space-y-2 text-left max-w-md mx-auto">
+                  <li>The booking link is invalid or expired</li>
+                  <li>The booking has been cancelled</li>
+                  <li>The booking ID is missing from the URL</li>
+                </ul>
+              </div>
+              <div className="flex justify-center pt-4">
+                <Button
+                  onClick={() => navigate("/")}
+                  className="px-8"
+                >
+                  Return to Home
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
   }
 
   return (

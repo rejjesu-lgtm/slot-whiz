@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Calendar, Clock, User, MapPin, Phone, Loader2 } from "lucide-react";
+import { Calendar, Clock, User, MapPin, Phone, Loader2, Heart, Sparkles, CheckCircle2, XCircle } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
 
 export default function ConfirmBooking() {
@@ -160,7 +160,7 @@ export default function ConfirmBooking() {
   // Always show something, even if React hasn't fully initialized
   if (!mounted) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen bg-[var(--gradient-hero)] flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
           <p className="text-muted-foreground">Loading...</p>
@@ -171,8 +171,11 @@ export default function ConfirmBooking() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center">
+      <div className="min-h-screen bg-[var(--gradient-hero)] flex items-center justify-center relative overflow-hidden">
+        {/* Decorative gradient orbs */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-float" />
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-accent/5 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }} />
+        <div className="text-center relative z-10">
           <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
           <p className="text-muted-foreground">Loading booking details...</p>
         </div>
@@ -182,20 +185,48 @@ export default function ConfirmBooking() {
 
   if (error || !booking) {
     return (
-      <div className="min-h-screen bg-background py-12 px-4">
-        <div className="max-w-2xl mx-auto">
-          <Card className="border-2 border-destructive/20 shadow-xl">
+      <div className="min-h-screen bg-[var(--gradient-hero)] relative overflow-hidden py-12 px-4">
+        {/* Decorative gradient orbs */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-float" />
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-accent/5 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }} />
+        
+        {/* Header */}
+        <header className="border-b border-border/50 bg-card/60 backdrop-blur-xl sticky top-0 z-50 shadow-[var(--shadow-soft)] mb-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <div className="flex items-center gap-3 group cursor-pointer" onClick={() => navigate("/")}>
+              <div className="relative">
+                <Heart className="h-8 w-8 text-primary group-hover:scale-110 transition-transform duration-300" />
+                <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl group-hover:bg-primary/30 transition-all" />
+              </div>
+              <div>
+                <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+                  Mathru Bakthi Sharathasthalam
+                </h1>
+              </div>
+            </div>
+            <a href="tel:+919094257006" className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-primary to-accent text-primary-foreground hover:shadow-[var(--shadow-glow)] transition-all duration-300 hover:scale-105">
+              <Phone className="h-4 w-4" />
+              <span className="font-semibold hidden sm:inline">+91 90942 57006</span>
+            </a>
+          </div>
+        </header>
+
+        <div className="max-w-2xl mx-auto relative z-10">
+          <Card className="border-2 border-destructive/20 shadow-[var(--shadow-elevated)] backdrop-blur-xl bg-[var(--gradient-card)]">
             <CardHeader className="text-center bg-gradient-to-br from-destructive/10 to-destructive/5">
+              <div className="flex justify-center mb-4">
+                <XCircle className="h-16 w-16 text-destructive" />
+              </div>
               <CardTitle className="text-3xl font-bold text-destructive">
                 Booking Not Found
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6 space-y-6">
               <div className="text-center space-y-4">
-                <p className="text-muted-foreground">
+                <p className="text-muted-foreground text-lg">
                   {error || "The booking you're looking for could not be found."}
                 </p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground font-semibold">
                   This could happen if:
                 </p>
                 <ul className="text-sm text-muted-foreground list-disc list-inside space-y-2 text-left max-w-md mx-auto">
@@ -207,7 +238,7 @@ export default function ConfirmBooking() {
               <div className="flex justify-center pt-4">
                 <Button
                   onClick={() => navigate("/")}
-                  className="px-8"
+                  className="px-8 bg-gradient-to-r from-primary to-accent hover:shadow-[var(--shadow-glow)] transition-all duration-300"
                 >
                   Return to Home
                 </Button>
@@ -220,103 +251,172 @@ export default function ConfirmBooking() {
   }
 
   return (
-    <div className="min-h-screen bg-background py-12 px-4">
-      <div className="max-w-2xl mx-auto">
-        <Card className="border-2 border-primary/20 shadow-xl">
-          <CardHeader className="text-center bg-gradient-to-br from-primary/10 to-primary/5">
-            <CardTitle className="text-3xl font-bold text-primary">
-              Confirm Your Booking
-            </CardTitle>
-            <p className="text-muted-foreground mt-2">
-              Please review your booking details and confirm
-            </p>
-          </CardHeader>
-          <CardContent className="p-6 space-y-6">
-            <div className="space-y-4">
-              <div className="flex items-start gap-3 p-4 rounded-lg bg-card border border-border">
-                <User className="h-5 w-5 text-primary mt-0.5" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Name</p>
-                  <p className="font-semibold text-foreground">{booking.user_name}</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3 p-4 rounded-lg bg-card border border-border">
-                <MapPin className="h-5 w-5 text-primary mt-0.5" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Address</p>
-                  <p className="font-semibold text-foreground">{booking.address}</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3 p-4 rounded-lg bg-card border border-border">
-                <Phone className="h-5 w-5 text-primary mt-0.5" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Phone</p>
-                  <p className="font-semibold text-foreground">{booking.phone_number}</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3 p-4 rounded-lg bg-card border border-border">
-                <Calendar className="h-5 w-5 text-primary mt-0.5" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Date</p>
-                  <p className="font-semibold text-foreground">
-                    {new Date(booking.booking_date).toLocaleDateString("en-US", {
-                      weekday: "long",
-                      month: "long",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3 p-4 rounded-lg bg-card border border-border">
-                <Clock className="h-5 w-5 text-primary mt-0.5" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Time Slot</p>
-                  <p className="font-semibold text-foreground">{getSlotLabel(booking.slot_key)}</p>
-                </div>
-              </div>
+    <div className="min-h-screen bg-[var(--gradient-hero)] relative overflow-hidden">
+      {/* Decorative gradient orbs */}
+      <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-float" />
+      <div className="absolute bottom-0 left-0 w-96 h-96 bg-accent/5 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }} />
+      
+      {/* Header */}
+      <header className="border-b border-border/50 bg-card/60 backdrop-blur-xl sticky top-0 z-50 shadow-[var(--shadow-soft)]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+          <div className="flex items-center gap-3 group cursor-pointer" onClick={() => navigate("/")}>
+            <div className="relative">
+              <Heart className="h-8 w-8 text-primary group-hover:scale-110 transition-transform duration-300" />
+              <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl group-hover:bg-primary/30 transition-all" />
             </div>
-
-            <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
-              <p className="text-sm text-foreground">
-                ✓ Click "Yes, Confirm" to finalize your booking and receive payment details
-              </p>
-              <p className="text-sm text-foreground mt-2">
-                ✗ Click "No, Cancel" to cancel this booking and choose another slot
-              </p>
+            <div>
+              <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+                Mathru Bakthi Sharathasthalam
+              </h1>
             </div>
+          </div>
+          <a href="tel:+919094257006" className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-primary to-accent text-primary-foreground hover:shadow-[var(--shadow-glow)] transition-all duration-300 hover:scale-105">
+            <Phone className="h-4 w-4" />
+            <span className="font-semibold hidden sm:inline">+91 90942 57006</span>
+          </a>
+        </div>
+      </header>
 
-            <div className="flex gap-4 pt-4">
-              <Button
-                variant="outline"
-                className="flex-1 h-12 text-base"
-                onClick={handleDecline}
-                disabled={processing}
-              >
-                {processing ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  "No, Cancel"
-                )}
-              </Button>
-              <Button
-                className="flex-1 h-12 text-base"
-                onClick={handleConfirm}
-                disabled={processing}
-              >
-                {processing ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  "Yes, Confirm"
-                )}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-16 relative">
+        {/* Hero Section */}
+        <div className="text-center mb-12 md:mb-16 animate-slide-in-from-top">
+          <div className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 rounded-full mb-6 border border-primary/20 backdrop-blur-sm shadow-[var(--shadow-soft)] hover:shadow-[var(--shadow-card)] transition-all duration-300">
+            <Sparkles className="h-4 w-4 text-primary animate-glow" />
+            <span className="text-sm font-semibold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">Booking Confirmation</span>
+          </div>
+          <h2 className="text-4xl md:text-6xl font-bold text-foreground mb-4 leading-tight">
+            <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-glow">Review Your Booking</span>
+          </h2>
+          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
+            Please verify your details and confirm to proceed
+          </p>
+        </div>
+
+        {/* Booking Details Card */}
+        <div className="max-w-3xl mx-auto animate-slide-in-from-bottom">
+          <Card className="bg-[var(--gradient-card)] backdrop-blur-xl rounded-3xl shadow-[var(--shadow-elevated)] border border-border/50 overflow-hidden relative group">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            
+            <CardHeader className="relative bg-gradient-to-r from-primary/10 via-accent/5 to-primary/10 px-8 py-10 md:px-10 border-b border-border/50 backdrop-blur-sm">
+              <div className="flex items-center justify-center gap-3 mb-4">
+                <CheckCircle2 className="h-8 w-8 text-primary animate-glow" />
+                <Sparkles className="h-5 w-5 text-accent animate-float" />
+              </div>
+              <CardTitle className="text-3xl md:text-4xl font-bold text-center mb-3 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+                Booking Details
+              </CardTitle>
+              <p className="text-center text-muted-foreground text-base">Review your information below</p>
+            </CardHeader>
+
+            <CardContent className="p-8 md:p-10 space-y-6 relative">
+              <div className="grid gap-4">
+                <div className="flex items-start gap-4 p-5 rounded-2xl bg-card/80 border border-border/50 shadow-[var(--shadow-soft)] hover:shadow-[var(--shadow-card)] transition-all duration-300 backdrop-blur-sm">
+                  <div className="p-2 bg-gradient-to-r from-primary/20 to-primary/10 rounded-lg">
+                    <User className="h-6 w-6 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-muted-foreground mb-1">Full Name</p>
+                    <p className="text-lg font-bold text-foreground">{booking.user_name}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4 p-5 rounded-2xl bg-card/80 border border-border/50 shadow-[var(--shadow-soft)] hover:shadow-[var(--shadow-card)] transition-all duration-300 backdrop-blur-sm">
+                  <div className="p-2 bg-gradient-to-r from-accent/20 to-accent/10 rounded-lg">
+                    <MapPin className="h-6 w-6 text-accent" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-muted-foreground mb-1">Address</p>
+                    <p className="text-lg font-bold text-foreground">{booking.address}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4 p-5 rounded-2xl bg-card/80 border border-border/50 shadow-[var(--shadow-soft)] hover:shadow-[var(--shadow-card)] transition-all duration-300 backdrop-blur-sm">
+                  <div className="p-2 bg-gradient-to-r from-primary/20 to-primary/10 rounded-lg">
+                    <Phone className="h-6 w-6 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-muted-foreground mb-1">Phone Number</p>
+                    <p className="text-lg font-bold text-foreground">{booking.phone_number}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4 p-5 rounded-2xl bg-card/80 border border-border/50 shadow-[var(--shadow-soft)] hover:shadow-[var(--shadow-card)] transition-all duration-300 backdrop-blur-sm">
+                  <div className="p-2 bg-gradient-to-r from-accent/20 to-accent/10 rounded-lg">
+                    <Calendar className="h-6 w-6 text-accent" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-muted-foreground mb-1">Date</p>
+                    <p className="text-lg font-bold text-foreground">
+                      {new Date(booking.booking_date).toLocaleDateString("en-US", {
+                        weekday: "long",
+                        month: "long",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4 p-5 rounded-2xl bg-card/80 border border-border/50 shadow-[var(--shadow-soft)] hover:shadow-[var(--shadow-card)] transition-all duration-300 backdrop-blur-sm">
+                  <div className="p-2 bg-gradient-to-r from-primary/20 to-primary/10 rounded-lg">
+                    <Clock className="h-6 w-6 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-muted-foreground mb-1">Time Slot</p>
+                    <p className="text-lg font-bold text-foreground">{getSlotLabel(booking.slot_key)}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-gradient-to-r from-primary/10 via-accent/5 to-primary/10 border border-primary/20 rounded-2xl p-6 backdrop-blur-sm shadow-[var(--shadow-soft)]">
+                <div className="flex items-start gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                  <div className="space-y-2">
+                    <p className="text-sm font-semibold text-foreground">
+                      Click "Confirm Booking" to finalize your reservation
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      You'll receive payment details via WhatsApp after confirmation
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                <Button
+                  variant="outline"
+                  className="flex-1 h-14 text-base font-semibold border-2 hover:bg-destructive/10 hover:border-destructive/50 transition-all duration-300"
+                  onClick={handleDecline}
+                  disabled={processing}
+                >
+                  {processing ? (
+                    <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                  ) : (
+                    <XCircle className="h-5 w-5 mr-2" />
+                  )}
+                  Cancel Booking
+                </Button>
+                <Button
+                  className="flex-1 h-14 text-base font-semibold bg-gradient-to-r from-primary to-accent hover:shadow-[var(--shadow-glow)] transition-all duration-300 hover:scale-105"
+                  onClick={handleConfirm}
+                  disabled={processing}
+                >
+                  {processing ? (
+                    <>
+                      <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="h-5 w-5 mr-2" />
+                      Confirm Booking
+                    </>
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );

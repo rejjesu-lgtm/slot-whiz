@@ -116,8 +116,8 @@ export const BookingModal = ({
       const confirmLink = `${window.location.origin}/confirm?id=${bookingId}`;
 
       const slotLabels: Record<string, string> = {
-        morning: "6AM - 1PM",
-        afternoon: "7AM - 2PM",
+        morning: "1st Slot (6AM - 1PM)",
+        afternoon: "2nd Slot (7AM - 2PM)",
       };
 
       const slotTime = slotLabels[slotKey] || slotKey;
@@ -151,8 +151,8 @@ export const BookingModal = ({
 
   const getSlotLabel = () => {
     const labels: Record<string, string> = {
-      morning: "Morning Slot (6AM - 1PM)",
-      afternoon: "Afternoon Slot (7AM - 2PM)",
+      morning: "1st Slot (6AM - 1PM)",
+      afternoon: "2nd Slot (7AM - 2PM)",
     };
     return labels[slotKey] || "";
   };

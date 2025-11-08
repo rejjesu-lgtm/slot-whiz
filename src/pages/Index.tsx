@@ -13,12 +13,12 @@ const SLOTS = [
   {
     key: "morning",
     time: "6AM - 1PM",
-    label: "Morning Slot",
+    label: "1st Slot",
   },
   {
     key: "afternoon",
     time: "7AM - 2PM",
-    label: "Afternoon Slot",
+    label: "2nd Slot",
   },
 ] as const;
 

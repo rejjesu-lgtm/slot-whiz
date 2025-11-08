@@ -126,9 +126,9 @@ export default function Admin() {
 
   const getSlotLabel = (key: string) => {
     const labels: Record<string, string> = {
-      morning: "6AM - 10AM",
-      afternoon: "11AM - 3PM",
-      evening: "4PM - 7PM",
+      morning: "1st Slot (6AM - 10AM)",
+      afternoon: "2nd Slot (11AM - 3PM)",
+      evening: "3rd Slot (4PM - 7PM)",
     };
     return labels[key] || key;
   };

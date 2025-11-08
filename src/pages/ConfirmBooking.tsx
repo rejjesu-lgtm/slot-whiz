@@ -25,8 +25,8 @@ export default function ConfirmBooking() {
 
   const slotLabels = useMemo<Record<string, string>>(
     () => ({
-      morning: "6AM - 1PM",
-      afternoon: "7AM - 2PM",
+      morning: "1st Slot (6AM - 1PM)",
+      afternoon: "2nd Slot (7AM - 2PM)",
     }),
     [],
   );

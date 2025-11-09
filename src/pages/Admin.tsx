@@ -7,8 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Loader2, Shield, LogOut, Filter, Pencil, Check, X } from "lucide-react";
+import { Loader2, Shield, LogOut, Filter, Pencil, Check, X, Plus } from "lucide-react";
 import { format } from "date-fns";
 
 interface Booking {
@@ -43,6 +44,15 @@ export default function Admin() {
   const [editedBooking, setEditedBooking] = useState<Partial<Booking>>({});
   const [dateFilter, setDateFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newBooking, setNewBooking] = useState({
+    user_name: "",
+    phone_number: "",
+    address: "",
+    booking_date: "",
+    slot_key: "morning",
+    status: "pending",
+  });
 
   useEffect(() => {
     checkAdminAccess();
@@ -169,6 +179,47 @@ export default function Admin() {
     }
   };
 
+  const handleAddBooking = async () => {
+    try {
+      // Validate required fields
+      if (!newBooking.user_name || !newBooking.phone_number || !newBooking.address || !newBooking.booking_date) {
+        toast.error("Please fill in all required fields");
+        return;
+      }
+
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error("Not authenticated");
+        return;
+      }
+
+      const { error } = await supabase
+        .from("bookings")
+        .insert({
+          ...newBooking,
+          user_id: session.user.id,
+          admin_override: true,
+          last_modified_by: "Admin",
+        });
+
+      if (error) throw error;
+
+      toast.success("Booking added successfully");
+      setShowAddForm(false);
+      setNewBooking({
+        user_name: "",
+        phone_number: "",
+        address: "",
+        booking_date: "",
+        slot_key: "morning",
+        status: "pending",
+      });
+    } catch (error) {
+      console.error("Error adding booking:", error);
+      toast.error("Failed to add booking");
+    }
+  };
+
   const getSlotLabel = (key: string) => {
     const labels: Record<string, string> = {
       morning: "1st Slot (6AM - 10AM)",
@@ -220,6 +271,107 @@ export default function Admin() {
             Sign Out
           </Button>
         </div>
+
+        {/* Add New Booking */}
+        <Card className="mb-6">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Plus className="h-5 w-5 text-primary" />
+                <CardTitle>Add New Booking</CardTitle>
+              </div>
+              <Button
+                onClick={() => setShowAddForm(!showAddForm)}
+                variant={showAddForm ? "outline" : "default"}
+                size="sm"
+              >
+                {showAddForm ? "Cancel" : "Add Booking"}
+              </Button>
+            </div>
+          </CardHeader>
+          {showAddForm && (
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="newUserName">User Name *</Label>
+                  <Input
+                    id="newUserName"
+                    value={newBooking.user_name}
+                    onChange={(e) => setNewBooking({ ...newBooking, user_name: e.target.value })}
+                    placeholder="Enter user name"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="newPhoneNumber">Phone Number *</Label>
+                  <Input
+                    id="newPhoneNumber"
+                    value={newBooking.phone_number}
+                    onChange={(e) => setNewBooking({ ...newBooking, phone_number: e.target.value })}
+                    placeholder="Enter phone number"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <Label htmlFor="newAddress">Address *</Label>
+                  <Textarea
+                    id="newAddress"
+                    value={newBooking.address}
+                    onChange={(e) => setNewBooking({ ...newBooking, address: e.target.value })}
+                    placeholder="Enter full address"
+                    rows={3}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="newBookingDate">Booking Date *</Label>
+                  <Input
+                    id="newBookingDate"
+                    type="date"
+                    value={newBooking.booking_date}
+                    onChange={(e) => setNewBooking({ ...newBooking, booking_date: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="newSlot">Slot</Label>
+                  <Select
+                    value={newBooking.slot_key}
+                    onValueChange={(value) => setNewBooking({ ...newBooking, slot_key: value })}
+                  >
+                    <SelectTrigger id="newSlot">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="morning">Morning (6AM - 10AM)</SelectItem>
+                      <SelectItem value="afternoon">Afternoon (11AM - 3PM)</SelectItem>
+                      <SelectItem value="evening">Evening (4PM - 7PM)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="newStatus">Status</Label>
+                  <Select
+                    value={newBooking.status}
+                    onValueChange={(value) => setNewBooking({ ...newBooking, status: value })}
+                  >
+                    <SelectTrigger id="newStatus">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="confirmed">Confirmed</SelectItem>
+                      <SelectItem value="cancelled">Cancelled</SelectItem>
+                      <SelectItem value="expired">Expired</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="mt-4 flex justify-end">
+                <Button onClick={handleAddBooking}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Booking
+                </Button>
+              </div>
+            </CardContent>
+          )}
+        </Card>
 
         {/* Filters */}
         <Card className="mb-6">

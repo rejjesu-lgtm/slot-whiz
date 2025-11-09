@@ -4,9 +4,10 @@ import { SlotCard } from "@/components/SlotCard";
 import { BookingModal } from "@/components/BookingModal";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Phone, Heart, Sparkles, CalendarDays } from "lucide-react";
+import { Phone, Heart, Sparkles, CalendarDays, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
+import { Link } from "react-router-dom";
 import type { Tables } from "@/integrations/supabase/types";
 
 const SLOTS = [
@@ -278,6 +279,17 @@ const Index = () => {
       setIsModalOpen(false);
       setSelectedSlot(null);
     }} slotKey={selectedSlot || ""} selectedDate={selectedDate} onSuccess={fetchBookings} />
+    
+      {/* Admin Access Button */}
+      <Link to="/admin" className="fixed bottom-8 right-8 z-50 group">
+        <Button 
+          size="lg"
+          className="gap-2 bg-gradient-to-r from-primary to-accent hover:shadow-[var(--shadow-glow)] transition-all duration-300 hover:scale-105 rounded-full px-6 py-6 shadow-[var(--shadow-elevated)]"
+        >
+          <Shield className="h-5 w-5" />
+          <span className="font-semibold">Admin Access</span>
+        </Button>
+      </Link>
     </div>;
 };
 export default Index;

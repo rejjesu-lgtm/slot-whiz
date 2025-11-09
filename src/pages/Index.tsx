@@ -36,12 +36,20 @@ const Index = () => {
 
   const checkSystemSettings = useCallback(async () => {
     try {
+      if (!supabase) {
+        console.warn("Supabase client not available");
+        return;
+      }
+
       const { data, error } = await supabase
         .from("admin_settings")
         .select("*")
         .in("setting_key", ["booking_system_enabled", "maintenance_mode"]);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching system settings:", error);
+        return;
+      }
 
       const bookingEnabled = data?.find((setting) => setting.setting_key === "booking_system_enabled");
       const maintenance = data?.find((setting) => setting.setting_key === "maintenance_mode");
@@ -50,6 +58,7 @@ const Index = () => {
       if (maintenance) setMaintenanceMode(maintenance.setting_value === "true");
     } catch (error) {
       console.error("Error checking system settings:", error);
+      // Don't throw - allow page to render even if settings can't be loaded
     }
   }, []);
 
@@ -57,40 +66,61 @@ const Index = () => {
     setLoading(true);
 
     try {
+      if (!supabase) {
+        console.warn("Supabase client not available");
+        setBookings([]);
+        return;
+      }
+
       const { data, error } = await supabase
         .from("bookings")
         .select("*")
         .eq("booking_date", dateString);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching bookings:", error);
+        setBookings([]);
+        return;
+      }
 
       setBookings(data ?? []);
     } catch (error) {
       console.error("Error fetching bookings:", error);
-      toast.error("Failed to load bookings");
+      setBookings([]);
+      // Don't show toast on initial load to avoid annoying users
     } finally {
       setLoading(false);
     }
   }, [dateString]);
 
   const subscribeToBookings = useCallback(() => {
-    const channel = supabase
-      .channel(`bookings-${dateString}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "bookings",
-          filter: `booking_date=eq.${dateString}`,
-        },
-        () => {
-          void fetchBookings();
-        },
-      )
-      .subscribe();
+    if (!supabase) {
+      console.warn("Supabase client not available for subscription");
+      return null;
+    }
 
-    return channel;
+    try {
+      const channel = supabase
+        .channel(`bookings-${dateString}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "bookings",
+            filter: `booking_date=eq.${dateString}`,
+          },
+          () => {
+            void fetchBookings();
+          },
+        )
+        .subscribe();
+
+      return channel;
+    } catch (error) {
+      console.error("Error setting up subscription:", error);
+      return null;
+    }
   }, [dateString, fetchBookings]);
 
   useEffect(() => {
@@ -102,7 +132,13 @@ const Index = () => {
     const channel = subscribeToBookings();
 
     return () => {
-      supabase.removeChannel(channel);
+      if (channel && supabase) {
+        try {
+          supabase.removeChannel(channel);
+        } catch (error) {
+          console.error("Error removing channel:", error);
+        }
+      }
     };
   }, [fetchBookings, subscribeToBookings]);
 
@@ -134,6 +170,10 @@ const Index = () => {
   };
   const expireBooking = async () => {
     try {
+      if (!supabase) {
+        console.warn("Supabase client not available");
+        return;
+      }
       await supabase.functions.invoke("expire-bookings");
       await fetchBookings();
     } catch (error) {

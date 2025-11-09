@@ -1,14 +1,15 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Loader2, Settings, Calendar, Lock, Shield } from "lucide-react";
+import { Loader2, Shield, LogOut, Filter, Pencil, Check, X, Plus } from "lucide-react";
 import { format } from "date-fns";
 
 interface Booking {
@@ -34,17 +35,91 @@ interface AdminSetting {
 }
 
 export default function Admin() {
+  const navigate = useNavigate();
   const [bookings, setBookings] = useState<Booking[]>([]);
-  const [settings, setSettings] = useState<AdminSetting[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
-  const [adminNotes, setAdminNotes] = useState("");
-  const [adminName, setAdminName] = useState("");
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editedBooking, setEditedBooking] = useState<Partial<Booking>>({});
+  const [dateFilter, setDateFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newBooking, setNewBooking] = useState({
+    user_name: "",
+    phone_number: "",
+    address: "",
+    booking_date: "",
+    slot_key: "morning",
+    status: "pending",
+  });
 
   useEffect(() => {
-    fetchBookings();
-    fetchSettings();
+    checkAdminAccess();
   }, []);
+
+  useEffect(() => {
+    if (!isAdmin) return;
+
+    // Set up real-time subscription
+    const channel = supabase
+      .channel('bookings-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'bookings'
+        },
+        () => {
+          fetchBookings();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [isAdmin]);
+
+  const checkAdminAccess = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast.error("Please log in to access admin panel");
+        navigate("/auth");
+        return;
+      }
+
+      // Check if user has admin role
+      const { data: roleData, error: roleError } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", session.user.id)
+        .eq("role", "admin")
+        .single();
+
+      if (roleError || !roleData) {
+        toast.error("Access denied. Admin privileges required.");
+        navigate("/");
+        return;
+      }
+
+      setIsAdmin(true);
+      setCheckingAuth(false);
+      fetchBookings();
+    } catch (error) {
+      console.error("Error checking admin access:", error);
+      toast.error("Authentication error");
+      navigate("/auth");
+    }
+  };
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    navigate("/auth");
+  };
 
   const fetchBookings = async () => {
     try {
@@ -64,63 +139,84 @@ export default function Admin() {
     }
   };
 
-  const fetchSettings = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("admin_settings")
-        .select("*");
-
-      if (error) throw error;
-      setSettings(data || []);
-    } catch (error) {
-      console.error("Error fetching settings:", error);
-      toast.error("Failed to load settings");
-    }
+  const startEditing = (booking: Booking) => {
+    setEditingId(booking.id);
+    setEditedBooking({
+      user_name: booking.user_name,
+      phone_number: booking.phone_number,
+      address: booking.address,
+      booking_date: booking.booking_date,
+      slot_key: booking.slot_key,
+      status: booking.status,
+    });
   };
 
-  const updateBookingStatus = async (bookingId: string, newStatus: string, override: boolean) => {
-    if (!adminName) {
-      toast.error("Please enter your admin name");
-      return;
-    }
+  const cancelEditing = () => {
+    setEditingId(null);
+    setEditedBooking({});
+  };
 
+  const saveEditing = async (bookingId: string) => {
     try {
       const { error } = await supabase
         .from("bookings")
         .update({
-          status: newStatus,
-          admin_override: override,
-          admin_notes: adminNotes,
-          last_modified_by: adminName,
+          ...editedBooking,
+          admin_override: true,
+          last_modified_by: "Admin",
         })
         .eq("id", bookingId);
 
       if (error) throw error;
 
       toast.success("Booking updated successfully");
+      setEditingId(null);
+      setEditedBooking({});
       fetchBookings();
-      setSelectedBooking(null);
-      setAdminNotes("");
     } catch (error) {
       console.error("Error updating booking:", error);
       toast.error("Failed to update booking");
     }
   };
 
-  const updateSetting = async (settingKey: string, newValue: string) => {
+  const handleAddBooking = async () => {
     try {
+      // Validate required fields
+      if (!newBooking.user_name || !newBooking.phone_number || !newBooking.address || !newBooking.booking_date) {
+        toast.error("Please fill in all required fields");
+        return;
+      }
+
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error("Not authenticated");
+        return;
+      }
+
       const { error } = await supabase
-        .from("admin_settings")
-        .update({ setting_value: newValue })
-        .eq("setting_key", settingKey);
+        .from("bookings")
+        .insert({
+          ...newBooking,
+          user_id: session.user.id,
+          admin_override: true,
+          last_modified_by: "Admin",
+        });
 
       if (error) throw error;
 
-      toast.success("Setting updated successfully");
-      fetchSettings();
+      toast.success("Booking added successfully");
+      setShowAddForm(false);
+      setNewBooking({
+        user_name: "",
+        phone_number: "",
+        address: "",
+        booking_date: "",
+        slot_key: "morning",
+        status: "pending",
+      });
     } catch (error) {
-      console.error("Error updating setting:", error);
-      toast.error("Failed to update setting");
+      console.error("Error adding booking:", error);
+      toast.error("Failed to add booking");
     }
   };
 
@@ -148,7 +244,13 @@ export default function Admin() {
     }
   };
 
-  if (loading) {
+  const filteredBookings = bookings.filter((booking) => {
+    const matchesDate = !dateFilter || booking.booking_date === dateFilter;
+    const matchesStatus = statusFilter === "all" || booking.status === statusFilter;
+    return matchesDate && matchesStatus;
+  });
+
+  if (loading || checkingAuth) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -158,142 +260,273 @@ export default function Admin() {
 
   return (
     <div className="min-h-screen bg-background py-8 px-4">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-center gap-3 mb-8">
-          <Shield className="h-8 w-8 text-primary" />
-          <h1 className="text-3xl font-bold text-foreground">Admin Dashboard</h1>
+      <div className="max-w-[1600px] mx-auto">
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-3">
+            <Shield className="h-8 w-8 text-primary" />
+            <h1 className="text-3xl font-bold text-foreground">Admin Dashboard</h1>
+          </div>
+          <Button onClick={handleSignOut} variant="outline" size="sm">
+            <LogOut className="h-4 w-4 mr-2" />
+            Sign Out
+          </Button>
         </div>
 
-        {/* System Settings */}
-        <Card className="mb-8">
+        {/* Add New Booking */}
+        <Card className="mb-6">
           <CardHeader>
-            <div className="flex items-center gap-2">
-              <Settings className="h-5 w-5 text-primary" />
-              <CardTitle>System Settings</CardTitle>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Plus className="h-5 w-5 text-primary" />
+                <CardTitle>Add New Booking</CardTitle>
+              </div>
+              <Button
+                onClick={() => setShowAddForm(!showAddForm)}
+                variant={showAddForm ? "outline" : "default"}
+                size="sm"
+              >
+                {showAddForm ? "Cancel" : "Add Booking"}
+              </Button>
             </div>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {settings.map((setting) => (
-              <div key={setting.id} className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="flex-1">
-                  <Label className="text-base font-semibold">{setting.setting_key}</Label>
-                  <p className="text-sm text-muted-foreground">{setting.description}</p>
+          {showAddForm && (
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="newUserName">User Name *</Label>
+                  <Input
+                    id="newUserName"
+                    value={newBooking.user_name}
+                    onChange={(e) => setNewBooking({ ...newBooking, user_name: e.target.value })}
+                    placeholder="Enter user name"
+                  />
                 </div>
-                <div className="flex items-center gap-4">
-                  {setting.setting_value === "true" || setting.setting_value === "false" ? (
-                    <Switch
-                      checked={setting.setting_value === "true"}
-                      onCheckedChange={(checked) =>
-                        updateSetting(setting.setting_key, checked ? "true" : "false")
-                      }
-                    />
-                  ) : (
-                    <Input
-                      value={setting.setting_value}
-                      onChange={(e) => updateSetting(setting.setting_key, e.target.value)}
-                      className="w-48"
-                    />
-                  )}
+                <div>
+                  <Label htmlFor="newPhoneNumber">Phone Number *</Label>
+                  <Input
+                    id="newPhoneNumber"
+                    value={newBooking.phone_number}
+                    onChange={(e) => setNewBooking({ ...newBooking, phone_number: e.target.value })}
+                    placeholder="Enter phone number"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <Label htmlFor="newAddress">Address *</Label>
+                  <Textarea
+                    id="newAddress"
+                    value={newBooking.address}
+                    onChange={(e) => setNewBooking({ ...newBooking, address: e.target.value })}
+                    placeholder="Enter full address"
+                    rows={3}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="newBookingDate">Booking Date *</Label>
+                  <Input
+                    id="newBookingDate"
+                    type="date"
+                    value={newBooking.booking_date}
+                    onChange={(e) => setNewBooking({ ...newBooking, booking_date: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="newSlot">Slot</Label>
+                  <Select
+                    value={newBooking.slot_key}
+                    onValueChange={(value) => setNewBooking({ ...newBooking, slot_key: value })}
+                  >
+                    <SelectTrigger id="newSlot">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="morning">Morning (6AM - 10AM)</SelectItem>
+                      <SelectItem value="afternoon">Afternoon (11AM - 3PM)</SelectItem>
+                      <SelectItem value="evening">Evening (4PM - 7PM)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="newStatus">Status</Label>
+                  <Select
+                    value={newBooking.status}
+                    onValueChange={(value) => setNewBooking({ ...newBooking, status: value })}
+                  >
+                    <SelectTrigger id="newStatus">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="confirmed">Confirmed</SelectItem>
+                      <SelectItem value="cancelled">Cancelled</SelectItem>
+                      <SelectItem value="expired">Expired</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
-            ))}
-          </CardContent>
+              <div className="mt-4 flex justify-end">
+                <Button onClick={handleAddBooking}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Booking
+                </Button>
+              </div>
+            </CardContent>
+          )}
         </Card>
 
-        {/* Admin Name */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle>Admin Identity</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Label htmlFor="adminName">Your Admin Name</Label>
-            <Input
-              id="adminName"
-              value={adminName}
-              onChange={(e) => setAdminName(e.target.value)}
-              placeholder="Enter your name for audit trail"
-              className="max-w-md"
-            />
-          </CardContent>
-        </Card>
-
-        {/* Bookings List */}
-        <Card>
+        {/* Filters */}
+        <Card className="mb-6">
           <CardHeader>
             <div className="flex items-center gap-2">
-              <Calendar className="h-5 w-5 text-primary" />
-              <CardTitle>All Bookings</CardTitle>
+              <Filter className="h-5 w-5 text-primary" />
+              <CardTitle>Filters</CardTitle>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {bookings.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">No bookings found</p>
-              ) : (
-                bookings.map((booking) => (
-                  <Card key={booking.id} className="border-2">
-                    <CardContent className="p-4">
-                      <div className="grid md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2">
-                            <Lock className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-sm font-semibold">Booking ID:</span>
-                            <span className="text-sm font-mono">{booking.id.slice(0, 8)}</span>
-                          </div>
-                          <p className="text-sm">
-                            <span className="font-semibold">Name:</span> {booking.user_name}
-                          </p>
-                          <p className="text-sm">
-                            <span className="font-semibold">Phone:</span> {booking.phone_number}
-                          </p>
-                          <p className="text-sm">
-                            <span className="font-semibold">Address:</span> {booking.address}
-                          </p>
-                          <p className="text-sm">
-                            <span className="font-semibold">Date:</span>{" "}
-                            {format(new Date(booking.booking_date), "EEEE, MMMM d, yyyy")}
-                          </p>
-                          <p className="text-sm">
-                            <span className="font-semibold">Time Slot:</span> {getSlotLabel(booking.slot_key)}
-                          </p>
-                        </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="dateFilter">Filter by Date</Label>
+                <Input
+                  id="dateFilter"
+                  type="date"
+                  value={dateFilter}
+                  onChange={(e) => setDateFilter(e.target.value)}
+                  className="w-full"
+                />
+              </div>
+              <div>
+                <Label htmlFor="statusFilter">Filter by Status</Label>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger id="statusFilter">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Statuses</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="confirmed">Confirmed</SelectItem>
+                    <SelectItem value="cancelled">Cancelled</SelectItem>
+                    <SelectItem value="expired">Expired</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-semibold">Status:</span>
-                            <span className={`text-xs px-2 py-1 rounded-full border ${getStatusColor(booking.status)}`}>
-                              {booking.status}
+        {/* Bookings Table */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Bookings ({filteredBookings.length})</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>User Name</TableHead>
+                    <TableHead>Phone Number</TableHead>
+                    <TableHead>Address</TableHead>
+                    <TableHead>Booking Date</TableHead>
+                    <TableHead>Slot</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredBookings.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                        No bookings found
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    filteredBookings.map((booking) => (
+                      <TableRow key={booking.id}>
+                        <TableCell>
+                          {editingId === booking.id ? (
+                            <Input
+                              value={editedBooking.user_name || ""}
+                              onChange={(e) =>
+                                setEditedBooking({ ...editedBooking, user_name: e.target.value })
+                              }
+                              className="h-8"
+                            />
+                          ) : (
+                            booking.user_name
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {editingId === booking.id ? (
+                            <Input
+                              value={editedBooking.phone_number || ""}
+                              onChange={(e) =>
+                                setEditedBooking({ ...editedBooking, phone_number: e.target.value })
+                              }
+                              className="h-8"
+                            />
+                          ) : (
+                            booking.phone_number
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {editingId === booking.id ? (
+                            <Input
+                              value={editedBooking.address || ""}
+                              onChange={(e) =>
+                                setEditedBooking({ ...editedBooking, address: e.target.value })
+                              }
+                              className="h-8"
+                            />
+                          ) : (
+                            <span className="line-clamp-2" title={booking.address}>
+                              {booking.address}
                             </span>
-                            {booking.admin_override && (
-                              <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-800 border border-blue-200">
-                                Override
-                              </span>
-                            )}
-                          </div>
-                          {booking.admin_notes && (
-                            <div className="bg-muted p-2 rounded">
-                              <p className="text-xs font-semibold">Admin Notes:</p>
-                              <p className="text-xs">{booking.admin_notes}</p>
-                            </div>
                           )}
-                          {booking.last_modified_by && (
-                            <p className="text-xs text-muted-foreground">
-                              Last modified by {booking.last_modified_by} on{" "}
-                              {booking.last_modified_at &&
-                                format(new Date(booking.last_modified_at), "MMM d, yyyy HH:mm")}
-                            </p>
+                        </TableCell>
+                        <TableCell>
+                          {editingId === booking.id ? (
+                            <Input
+                              type="date"
+                              value={editedBooking.booking_date || ""}
+                              onChange={(e) =>
+                                setEditedBooking({ ...editedBooking, booking_date: e.target.value })
+                              }
+                              className="h-8"
+                            />
+                          ) : (
+                            format(new Date(booking.booking_date), "MMM d, yyyy")
                           )}
-
-                          <div className="pt-2 space-y-2">
-                            <Label htmlFor={`status-${booking.id}`}>Change Status</Label>
+                        </TableCell>
+                        <TableCell>
+                          {editingId === booking.id ? (
                             <Select
-                              onValueChange={(value) => {
-                                setSelectedBooking(booking);
-                                updateBookingStatus(booking.id, value, true);
-                              }}
+                              value={editedBooking.slot_key || ""}
+                              onValueChange={(value) =>
+                                setEditedBooking({ ...editedBooking, slot_key: value })
+                              }
                             >
-                              <SelectTrigger id={`status-${booking.id}`}>
-                                <SelectValue placeholder="Select new status" />
+                              <SelectTrigger className="h-8">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="morning">Morning</SelectItem>
+                                <SelectItem value="afternoon">Afternoon</SelectItem>
+                                <SelectItem value="evening">Evening</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          ) : (
+                            getSlotLabel(booking.slot_key)
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {editingId === booking.id ? (
+                            <Select
+                              value={editedBooking.status || ""}
+                              onValueChange={(value) =>
+                                setEditedBooking({ ...editedBooking, status: value })
+                              }
+                            >
+                              <SelectTrigger className="h-8">
+                                <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
                                 <SelectItem value="pending">Pending</SelectItem>
@@ -302,36 +535,45 @@ export default function Admin() {
                                 <SelectItem value="expired">Expired</SelectItem>
                               </SelectContent>
                             </Select>
-
-                            <div className="space-y-1">
-                              <Label htmlFor={`notes-${booking.id}`}>Admin Notes</Label>
-                              <Textarea
-                                id={`notes-${booking.id}`}
-                                value={selectedBooking?.id === booking.id ? adminNotes : booking.admin_notes || ""}
-                                onChange={(e) => {
-                                  setSelectedBooking(booking);
-                                  setAdminNotes(e.target.value);
-                                }}
-                                placeholder="Add notes about this booking..."
-                                rows={2}
-                              />
-                            </div>
-
-                            {selectedBooking?.id === booking.id && adminNotes && (
+                          ) : (
+                            <span
+                              className={`text-xs px-2 py-1 rounded-full border ${getStatusColor(
+                                booking.status
+                              )}`}
+                            >
+                              {booking.status}
+                            </span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {editingId === booking.id ? (
+                            <div className="flex justify-end gap-2">
                               <Button
                                 size="sm"
-                                onClick={() => updateBookingStatus(booking.id, booking.status, true)}
+                                variant="ghost"
+                                onClick={() => saveEditing(booking.id)}
                               >
-                                Save Notes
+                                <Check className="h-4 w-4 text-green-600" />
                               </Button>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
-              )}
+                              <Button size="sm" variant="ghost" onClick={cancelEditing}>
+                                <X className="h-4 w-4 text-red-600" />
+                              </Button>
+                            </div>
+                          ) : (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => startEditing(booking)}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
             </div>
           </CardContent>
         </Card>

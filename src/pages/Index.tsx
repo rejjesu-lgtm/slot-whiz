@@ -75,23 +75,28 @@ const Index = () => {
   }, [dateString]);
 
   const subscribeToBookings = useCallback(() => {
-    const channel = supabase
-      .channel(`bookings-${dateString}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "bookings",
-          filter: `booking_date=eq.${dateString}`,
-        },
-        () => {
-          void fetchBookings();
-        },
-      )
-      .subscribe();
+    try {
+      const channel = supabase
+        .channel(`bookings-${dateString}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "bookings",
+            filter: `booking_date=eq.${dateString}`,
+          },
+          () => {
+            void fetchBookings();
+          },
+        )
+        .subscribe();
 
-    return channel;
+      return channel;
+    } catch (error) {
+      console.error("Error subscribing to bookings:", error);
+      return null;
+    }
   }, [dateString, fetchBookings]);
 
   useEffect(() => {
@@ -103,7 +108,13 @@ const Index = () => {
     const channel = subscribeToBookings();
 
     return () => {
-      supabase.removeChannel(channel);
+      if (channel) {
+        try {
+          supabase.removeChannel(channel);
+        } catch (error) {
+          console.error("Error removing channel:", error);
+        }
+      }
     };
   }, [fetchBookings, subscribeToBookings]);
 

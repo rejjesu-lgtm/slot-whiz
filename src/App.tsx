@@ -12,13 +12,27 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+// Get basename from Vite's BASE_URL for React Router
+// Vite sets import.meta.env.BASE_URL to the base path configured in vite.config.ts
+// For GitHub Pages: "/" for custom domain, "/repo-name/" for project pages
+// BrowserRouter basename: undefined for root, or path without trailing slash for subdirectories
+const getBasename = () => {
+  const baseUrl = import.meta.env.BASE_URL;
+  // Handle empty, "./", or "/" as root - return undefined for root paths
+  if (!baseUrl || baseUrl === "./" || baseUrl === "/") {
+    return undefined;
+  }
+  // Remove trailing slash for non-root paths (React Router requirement)
+  return baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
+};
+
 const App = () => (
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <BrowserRouter>
+        <BrowserRouter basename={getBasename()}>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/confirm" element={<ConfirmBooking />} />

@@ -44,19 +44,7 @@ jobs:
       - name: Build
         env:
           BASE_PATH: ${{ steps.base-path.outputs.base_path }}
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
         run: npm run build
-
-      - name: Verify build output
-        run: |
-          echo "Build output verification:"
-          ls -la dist/
-          ls -la dist/assets/ || echo "No assets directory"
-          test -f dist/index.html && echo "✓ index.html exists" || echo "✗ index.html missing"
-          test -f dist/404.html && echo "✓ 404.html exists" || echo "✗ 404.html missing"
-          test -f dist/.nojekyll && echo "✓ .nojekyll exists" || echo "✗ .nojekyll missing"
-          test -f dist/CNAME && echo "✓ CNAME exists" || echo "✗ CNAME missing"
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
@@ -74,3 +62,4 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+

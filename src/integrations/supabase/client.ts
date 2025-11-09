@@ -2,36 +2,16 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || '';
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || '';
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
-// Check if Supabase is configured
-export const isSupabaseConfigured = !!(SUPABASE_URL && SUPABASE_PUBLISHABLE_KEY);
-
-if (!isSupabaseConfigured) {
-  // Provide a helpful warning so developers know why the app might fail
-  // early if they forgot to set the VITE_SUPABASE_* environment variables.
-  // eslint-disable-next-line no-console
-  console.warn(
-    "Supabase URL or publishable key is not set (VITE_SUPABASE_URL / VITE_SUPABASE_PUBLISHABLE_KEY). Some features may not work.",
-  );
-}
-
-// Use localStorage only when running in the browser.
-const storage = typeof window !== "undefined" ? localStorage : undefined;
-
-// Create Supabase client - use placeholder values if not configured to prevent errors
-export const supabase = createClient<Database>(
-  SUPABASE_URL || "https://placeholder.supabase.co",
-  SUPABASE_PUBLISHABLE_KEY || "placeholder-key",
-  {
-    auth: {
-      storage: storage as any,
-      persistSession: true,
-      autoRefreshToken: true,
-    },
-  },
-);
+export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+  auth: {
+    storage: localStorage,
+    persistSession: true,
+    autoRefreshToken: true,
+  }
+});

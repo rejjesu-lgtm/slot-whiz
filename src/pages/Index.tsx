@@ -2,11 +2,12 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { SlotCard } from "@/components/SlotCard";
 import { BookingModal } from "@/components/BookingModal";
-import { supabase, isSupabaseConfigured } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Phone, Heart, Sparkles, CalendarDays } from "lucide-react";
+import { Phone, Heart, Sparkles, CalendarDays, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
+import { Link } from "react-router-dom";
 import type { Tables } from "@/integrations/supabase/types";
 
 const SLOTS = [
@@ -35,25 +36,13 @@ const Index = () => {
   const dateString = useMemo(() => selectedDate.toISOString().split("T")[0], [selectedDate]);
 
   const checkSystemSettings = useCallback(async () => {
-    if (!isSupabaseConfigured) {
-      return; // Silently fail if Supabase is not configured
-    }
-
     try {
-      if (!supabase) {
-        console.warn("Supabase client not available");
-        return;
-      }
-
       const { data, error } = await supabase
         .from("admin_settings")
         .select("*")
         .in("setting_key", ["booking_system_enabled", "maintenance_mode"]);
 
-      if (error) {
-        console.error("Error fetching system settings:", error);
-        return;
-      }
+      if (error) throw error;
 
       const bookingEnabled = data?.find((setting) => setting.setting_key === "booking_system_enabled");
       const maintenance = data?.find((setting) => setting.setting_key === "maintenance_mode");
@@ -62,74 +51,47 @@ const Index = () => {
       if (maintenance) setMaintenanceMode(maintenance.setting_value === "true");
     } catch (error) {
       console.error("Error checking system settings:", error);
-      // Don't throw - allow page to render even if settings can't be loaded
     }
   }, []);
 
   const fetchBookings = useCallback(async () => {
     setLoading(true);
 
-    if (!isSupabaseConfigured) {
-      setBookings([]); // Set empty array if Supabase is not configured
-      setLoading(false);
-      return;
-    }
-
     try {
-      if (!supabase) {
-        console.warn("Supabase client not available");
-        setBookings([]);
-        return;
-      }
-
       const { data, error } = await supabase
         .from("bookings")
         .select("*")
         .eq("booking_date", dateString);
 
-      if (error) {
-        console.error("Error fetching bookings:", error);
-        setBookings([]);
-        return;
-      }
+      if (error) throw error;
 
       setBookings(data ?? []);
     } catch (error) {
       console.error("Error fetching bookings:", error);
-      setBookings([]);
-      // Don't show toast on initial load to avoid annoying users
+      toast.error("Failed to load bookings");
     } finally {
       setLoading(false);
     }
   }, [dateString]);
 
   const subscribeToBookings = useCallback(() => {
-    if (!isSupabaseConfigured || !supabase) {
-      return null; // Return null if Supabase is not configured
-    }
+    const channel = supabase
+      .channel(`bookings-${dateString}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "bookings",
+          filter: `booking_date=eq.${dateString}`,
+        },
+        () => {
+          void fetchBookings();
+        },
+      )
+      .subscribe();
 
-    try {
-      const channel = supabase
-        .channel(`bookings-${dateString}`)
-        .on(
-          "postgres_changes",
-          {
-            event: "*",
-            schema: "public",
-            table: "bookings",
-            filter: `booking_date=eq.${dateString}`,
-          },
-          () => {
-            void fetchBookings();
-          },
-        )
-        .subscribe();
-
-      return channel;
-    } catch (error) {
-      console.error("Error setting up subscription:", error);
-      return null;
-    }
+    return channel;
   }, [dateString, fetchBookings]);
 
   useEffect(() => {
@@ -141,13 +103,7 @@ const Index = () => {
     const channel = subscribeToBookings();
 
     return () => {
-      if (channel && supabase) {
-        try {
-          supabase.removeChannel(channel);
-        } catch (error) {
-          console.error("Error removing channel:", error);
-        }
-      }
+      supabase.removeChannel(channel);
     };
   }, [fetchBookings, subscribeToBookings]);
 
@@ -178,14 +134,7 @@ const Index = () => {
     return bookingForSlot?.whatsapp_sent_at ?? undefined;
   };
   const expireBooking = async () => {
-    if (!isSupabaseConfigured) {
-      return; // Don't try to expire if Supabase is not configured
-    }
     try {
-      if (!supabase) {
-        console.warn("Supabase client not available");
-        return;
-      }
       await supabase.functions.invoke("expire-bookings");
       await fetchBookings();
     } catch (error) {
@@ -330,6 +279,17 @@ const Index = () => {
       setIsModalOpen(false);
       setSelectedSlot(null);
     }} slotKey={selectedSlot || ""} selectedDate={selectedDate} onSuccess={fetchBookings} />
+    
+      {/* Admin Access Button */}
+      <Link to="/admin" className="fixed bottom-8 right-8 z-50 group">
+        <Button 
+          size="lg"
+          className="gap-2 bg-gradient-to-r from-primary to-accent hover:shadow-[var(--shadow-glow)] transition-all duration-300 hover:scale-105 rounded-full px-6 py-6 shadow-[var(--shadow-elevated)]"
+        >
+          <Shield className="h-5 w-5" />
+          <span className="font-semibold">Admin Access</span>
+        </Button>
+      </Link>
     </div>;
 };
 export default Index;

@@ -1,0 +1,7 @@
+project_id = "zlvezeanxrlxxpyitzxw"
+
+[functions.send-whatsapp-confirmation]
+verify_jwt = false
+
+[functions.expire-bookings]
+verify_jwt = false

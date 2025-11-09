@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { SlotCard } from "@/components/SlotCard";
 import { BookingModal } from "@/components/BookingModal";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, isSupabaseConfigured } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Phone, Heart, Sparkles, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -35,6 +35,10 @@ const Index = () => {
   const dateString = useMemo(() => selectedDate.toISOString().split("T")[0], [selectedDate]);
 
   const checkSystemSettings = useCallback(async () => {
+    if (!isSupabaseConfigured) {
+      return; // Silently fail if Supabase is not configured
+    }
+
     try {
       if (!supabase) {
         console.warn("Supabase client not available");
@@ -58,12 +62,22 @@ const Index = () => {
       if (maintenance) setMaintenanceMode(maintenance.setting_value === "true");
     } catch (error) {
       console.error("Error checking system settings:", error);
+<<<<<<< HEAD
       // Don't throw - allow page to render even if settings can't be loaded
+=======
+      // Don't block rendering if settings can't be loaded
+>>>>>>> 0615163 (Fix blank page: improve error handling, Supabase config checks, and app initialization)
     }
   }, []);
 
   const fetchBookings = useCallback(async () => {
     setLoading(true);
+
+    if (!isSupabaseConfigured) {
+      setBookings([]); // Set empty array if Supabase is not configured
+      setLoading(false);
+      return;
+    }
 
     try {
       if (!supabase) {
@@ -86,17 +100,29 @@ const Index = () => {
       setBookings(data ?? []);
     } catch (error) {
       console.error("Error fetching bookings:", error);
+<<<<<<< HEAD
       setBookings([]);
       // Don't show toast on initial load to avoid annoying users
+=======
+      if (isSupabaseConfigured) {
+        toast.error("Failed to load bookings");
+      }
+      setBookings([]); // Set empty array on error
+>>>>>>> 0615163 (Fix blank page: improve error handling, Supabase config checks, and app initialization)
     } finally {
       setLoading(false);
     }
   }, [dateString]);
 
   const subscribeToBookings = useCallback(() => {
+<<<<<<< HEAD
     if (!supabase) {
       console.warn("Supabase client not available for subscription");
       return null;
+=======
+    if (!isSupabaseConfigured) {
+      return null; // Return null if Supabase is not configured
+>>>>>>> 0615163 (Fix blank page: improve error handling, Supabase config checks, and app initialization)
     }
 
     try {
@@ -169,6 +195,9 @@ const Index = () => {
     return bookingForSlot?.whatsapp_sent_at ?? undefined;
   };
   const expireBooking = async () => {
+    if (!isSupabaseConfigured) {
+      return; // Don't try to expire if Supabase is not configured
+    }
     try {
       if (!supabase) {
         console.warn("Supabase client not available");

@@ -8,38 +8,30 @@ const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY |
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
-// Create a safe Supabase client that won't crash if env vars are missing
-let supabaseClient;
-try {
-  if (SUPABASE_URL && SUPABASE_PUBLISHABLE_KEY) {
-    supabaseClient = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-      auth: {
-        storage: localStorage,
-        persistSession: true,
-        autoRefreshToken: true,
-      }
-    });
-  } else {
-    console.warn('Supabase environment variables are not set. Some features may not work.');
-    // Create a mock client to prevent crashes
-    supabaseClient = createClient<Database>('https://placeholder.supabase.co', 'placeholder-key', {
-      auth: {
-        storage: localStorage,
-        persistSession: true,
-        autoRefreshToken: true,
-      }
-    });
-  }
-} catch (error) {
-  console.error('Failed to initialize Supabase client:', error);
-  // Create a fallback client
-  supabaseClient = createClient<Database>('https://placeholder.supabase.co', 'placeholder-key', {
-    auth: {
-      storage: localStorage,
-      persistSession: true,
-      autoRefreshToken: true,
-    }
-  });
+// Check if Supabase is configured
+export const isSupabaseConfigured = !!(SUPABASE_URL && SUPABASE_PUBLISHABLE_KEY);
+
+if (!isSupabaseConfigured) {
+  // Provide a helpful warning so developers know why the app might fail
+  // early if they forgot to set the VITE_SUPABASE_* environment variables.
+  // eslint-disable-next-line no-console
+  console.warn(
+    "Supabase URL or publishable key is not set (VITE_SUPABASE_URL / VITE_SUPABASE_PUBLISHABLE_KEY). Some features may not work.",
+  );
 }
 
-export const supabase = supabaseClient;
+// Use localStorage only when running in the browser.
+const storage = typeof window !== "undefined" ? localStorage : undefined;
+
+// Create Supabase client - use placeholder values if not configured to prevent errors
+export const supabase = createClient<Database>(
+  SUPABASE_URL || "https://placeholder.supabase.co",
+  SUPABASE_PUBLISHABLE_KEY || "placeholder-key",
+  {
+    auth: {
+      storage: storage as any,
+      persistSession: true,
+      autoRefreshToken: true,
+    },
+  },
+);

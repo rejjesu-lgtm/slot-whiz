@@ -62,11 +62,7 @@ const Index = () => {
       if (maintenance) setMaintenanceMode(maintenance.setting_value === "true");
     } catch (error) {
       console.error("Error checking system settings:", error);
-<<<<<<< HEAD
       // Don't throw - allow page to render even if settings can't be loaded
-=======
-      // Don't block rendering if settings can't be loaded
->>>>>>> 0615163 (Fix blank page: improve error handling, Supabase config checks, and app initialization)
     }
   }, []);
 
@@ -100,29 +96,16 @@ const Index = () => {
       setBookings(data ?? []);
     } catch (error) {
       console.error("Error fetching bookings:", error);
-<<<<<<< HEAD
       setBookings([]);
       // Don't show toast on initial load to avoid annoying users
-=======
-      if (isSupabaseConfigured) {
-        toast.error("Failed to load bookings");
-      }
-      setBookings([]); // Set empty array on error
->>>>>>> 0615163 (Fix blank page: improve error handling, Supabase config checks, and app initialization)
     } finally {
       setLoading(false);
     }
   }, [dateString]);
 
   const subscribeToBookings = useCallback(() => {
-<<<<<<< HEAD
-    if (!supabase) {
-      console.warn("Supabase client not available for subscription");
-      return null;
-=======
-    if (!isSupabaseConfigured) {
+    if (!isSupabaseConfigured || !supabase) {
       return null; // Return null if Supabase is not configured
->>>>>>> 0615163 (Fix blank page: improve error handling, Supabase config checks, and app initialization)
     }
 
     try {

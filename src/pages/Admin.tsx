@@ -259,9 +259,8 @@ export default function Admin() {
 
   const getSlotLabel = (key: string) => {
     const labels: Record<string, string> = {
-      morning: "1st Slot (6AM - 10AM)",
-      afternoon: "2nd Slot (11AM - 3PM)",
-      evening: "3rd Slot (4PM - 7PM)",
+      morning: "1st Slot (6AM - 1PM)",
+      afternoon: "2nd Slot (7AM - 2PM)",
     };
     return labels[key] || key;
   };
@@ -376,9 +375,8 @@ export default function Admin() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="morning">Morning (6AM - 10AM)</SelectItem>
-                      <SelectItem value="afternoon">Afternoon (11AM - 3PM)</SelectItem>
-                      <SelectItem value="evening">Evening (4PM - 7PM)</SelectItem>
+                      <SelectItem value="morning">1st Slot (6AM - 1PM)</SelectItem>
+                      <SelectItem value="afternoon">2nd Slot (7AM - 2PM)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -545,9 +543,8 @@ export default function Admin() {
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="morning">Morning</SelectItem>
-                                <SelectItem value="afternoon">Afternoon</SelectItem>
-                                <SelectItem value="evening">Evening</SelectItem>
+                                <SelectItem value="morning">1st Slot (6AM - 1PM)</SelectItem>
+                                <SelectItem value="afternoon">2nd Slot (7AM - 2PM)</SelectItem>
                               </SelectContent>
                             </Select>
                           ) : (

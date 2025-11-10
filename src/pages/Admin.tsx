@@ -170,6 +170,22 @@ export default function Admin() {
 
   const saveEditing = async (bookingId: string) => {
     try {
+      // Check if changing to a slot that's already booked
+      if (editedBooking.booking_date && editedBooking.slot_key) {
+        const { data: existingBooking } = await supabase
+          .from("bookings")
+          .select("id, status")
+          .eq("booking_date", editedBooking.booking_date)
+          .eq("slot_key", editedBooking.slot_key)
+          .neq("id", bookingId)
+          .single();
+
+        if (existingBooking) {
+          toast.error(`This slot is already booked (Status: ${existingBooking.status})`);
+          return;
+        }
+      }
+
       const { error } = await supabase
         .from("bookings")
         .update({
@@ -205,6 +221,19 @@ export default function Admin() {
         return;
       }
 
+      // Check if slot is already booked
+      const { data: existingBooking } = await supabase
+        .from("bookings")
+        .select("id, status")
+        .eq("booking_date", newBooking.booking_date)
+        .eq("slot_key", newBooking.slot_key)
+        .single();
+
+      if (existingBooking) {
+        toast.error(`This slot is already booked (Status: ${existingBooking.status})`);
+        return;
+      }
+
       const { error } = await supabase
         .from("bookings")
         .insert({
@@ -226,7 +255,7 @@ export default function Admin() {
         slot_key: "morning",
         status: "pending",
       });
-      fetchBookings(); // Refresh the list immediately
+      fetchBookings();
     } catch (error) {
       console.error("Error adding booking:", error);
       toast.error("Failed to add booking");

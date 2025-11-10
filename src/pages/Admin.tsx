@@ -226,6 +226,7 @@ export default function Admin() {
         slot_key: "morning",
         status: "pending",
       });
+      fetchBookings(); // Refresh the list immediately
     } catch (error) {
       console.error("Error adding booking:", error);
       toast.error("Failed to add booking");

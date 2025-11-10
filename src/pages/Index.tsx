@@ -9,22 +9,16 @@ import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { Link } from "react-router-dom";
 import type { Tables } from "@/integrations/supabase/types";
-
-const SLOTS = [
-  {
-    key: "morning",
-    time: "6AM - 1PM",
-    label: "1st Slot",
-  },
-  {
-    key: "afternoon",
-    time: "7AM - 2PM",
-    label: "2nd Slot",
-  },
-] as const;
-
+const SLOTS = [{
+  key: "morning",
+  time: "6AM - 1PM",
+  label: "1st Slot"
+}, {
+  key: "afternoon",
+  time: "7AM - 2PM",
+  label: "2nd Slot"
+}] as const;
 type Booking = Tables<"bookings">;
-
 const Index = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -34,37 +28,29 @@ const Index = () => {
   const [bookingSystemEnabled, setBookingSystemEnabled] = useState(true);
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   const dateString = useMemo(() => selectedDate.toISOString().split("T")[0], [selectedDate]);
-
   const checkSystemSettings = useCallback(async () => {
     try {
-      const { data, error } = await supabase
-        .from("admin_settings")
-        .select("*")
-        .in("setting_key", ["booking_system_enabled", "maintenance_mode"]);
-
+      const {
+        data,
+        error
+      } = await supabase.from("admin_settings").select("*").in("setting_key", ["booking_system_enabled", "maintenance_mode"]);
       if (error) throw error;
-
-      const bookingEnabled = data?.find((setting) => setting.setting_key === "booking_system_enabled");
-      const maintenance = data?.find((setting) => setting.setting_key === "maintenance_mode");
-
+      const bookingEnabled = data?.find(setting => setting.setting_key === "booking_system_enabled");
+      const maintenance = data?.find(setting => setting.setting_key === "maintenance_mode");
       if (bookingEnabled) setBookingSystemEnabled(bookingEnabled.setting_value === "true");
       if (maintenance) setMaintenanceMode(maintenance.setting_value === "true");
     } catch (error) {
       console.error("Error checking system settings:", error);
     }
   }, []);
-
   const fetchBookings = useCallback(async () => {
     setLoading(true);
-
     try {
-      const { data, error } = await supabase
-        .from("bookings")
-        .select("*")
-        .eq("booking_date", dateString);
-
+      const {
+        data,
+        error
+      } = await supabase.from("bookings").select("*").eq("booking_date", dateString);
       if (error) throw error;
-
       setBookings(data ?? []);
     } catch (error) {
       console.error("Error fetching bookings:", error);
@@ -73,40 +59,27 @@ const Index = () => {
       setLoading(false);
     }
   }, [dateString]);
-
   const subscribeToBookings = useCallback(() => {
-    const channel = supabase
-      .channel(`bookings-${dateString}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "bookings",
-          filter: `booking_date=eq.${dateString}`,
-        },
-        () => {
-          void fetchBookings();
-        },
-      )
-      .subscribe();
-
+    const channel = supabase.channel(`bookings-${dateString}`).on("postgres_changes", {
+      event: "*",
+      schema: "public",
+      table: "bookings",
+      filter: `booking_date=eq.${dateString}`
+    }, () => {
+      void fetchBookings();
+    }).subscribe();
     return channel;
   }, [dateString, fetchBookings]);
-
   useEffect(() => {
     void checkSystemSettings();
   }, [checkSystemSettings]);
-
   useEffect(() => {
     void fetchBookings();
     const channel = subscribeToBookings();
-
     return () => {
       supabase.removeChannel(channel);
     };
   }, [fetchBookings, subscribeToBookings]);
-
   const handleSlotClick = (slotKey: string) => {
     if (maintenanceMode) {
       toast.error("System is currently under maintenance. Please try again later.");
@@ -125,12 +98,12 @@ const Index = () => {
     }
   };
   const getSlotStatus = (slotKey: string) => {
-    const bookingForSlot = bookings.find((entry) => entry.slot_key === slotKey);
+    const bookingForSlot = bookings.find(entry => entry.slot_key === slotKey);
     if (!bookingForSlot || bookingForSlot.status === "expired") return "available";
     return bookingForSlot.status;
   };
   const getBookingTimestamp = (slotKey: string) => {
-    const bookingForSlot = bookings.find((entry) => entry.slot_key === slotKey);
+    const bookingForSlot = bookings.find(entry => entry.slot_key === slotKey);
     return bookingForSlot?.whatsapp_sent_at ?? undefined;
   };
   const expireBooking = async () => {
@@ -162,9 +135,7 @@ const Index = () => {
               <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl group-hover:bg-primary/30 transition-all" />
             </div>
             <div>
-              <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-                Mathru Bakthi Sharathasthalam
-              </h1>
+              <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">Mathru Bakthi Sharatha Sthalam</h1>
               
             </div>
           </div>
@@ -180,7 +151,7 @@ const Index = () => {
         <div className="text-center mb-16 md:mb-20 animate-slide-in-from-top">
           <div className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 rounded-full mb-6 border border-primary/20 backdrop-blur-sm shadow-[var(--shadow-soft)] hover:shadow-[var(--shadow-card)] transition-all duration-300">
             <Sparkles className="h-4 w-4 text-primary animate-glow" />
-            <span className="text-sm font-semibold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">Chennai's Premier Srashtam Services</span>
+            <span className="text-sm font-semibold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">Chennai's Premier Sharahtam Services</span>
           </div>
           <h2 className="text-5xl md:text-7xl font-bold text-foreground mb-6 leading-tight">
             <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-glow">Hindu Sharatham Booking</span>
@@ -282,10 +253,7 @@ const Index = () => {
     
       {/* Admin Access Button */}
       <Link to="/admin" className="fixed bottom-8 right-8 z-50 group">
-        <Button 
-          size="lg"
-          className="gap-2 bg-gradient-to-r from-primary to-accent hover:shadow-[var(--shadow-glow)] transition-all duration-300 hover:scale-105 rounded-full px-6 py-6 shadow-[var(--shadow-elevated)]"
-        >
+        <Button size="lg" className="gap-2 bg-gradient-to-r from-primary to-accent hover:shadow-[var(--shadow-glow)] transition-all duration-300 hover:scale-105 rounded-full px-6 py-6 shadow-[var(--shadow-elevated)]">
           <Shield className="h-5 w-5" />
           <span className="font-semibold">Admin Access</span>
         </Button>

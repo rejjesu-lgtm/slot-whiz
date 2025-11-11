@@ -81,7 +81,10 @@ export const BookingModal = ({
     setLoading(true);
 
     try {
-      const dateStr = selectedDate.toISOString().split("T")[0];
+      const year = selectedDate.getFullYear();
+      const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+      const day = String(selectedDate.getDate()).padStart(2, '0');
+      const dateStr = `${year}-${month}-${day}`;
 
       // Check if slot is still available
       const { data: existing } = await supabase

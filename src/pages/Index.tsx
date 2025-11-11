@@ -27,7 +27,12 @@ const Index = () => {
   const [loading, setLoading] = useState(false);
   const [bookingSystemEnabled, setBookingSystemEnabled] = useState(true);
   const [maintenanceMode, setMaintenanceMode] = useState(false);
-  const dateString = useMemo(() => selectedDate.toISOString().split("T")[0], [selectedDate]);
+  const dateString = useMemo(() => {
+    const year = selectedDate.getFullYear();
+    const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+    const day = String(selectedDate.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }, [selectedDate]);
   const checkSystemSettings = useCallback(async () => {
     try {
       const {
